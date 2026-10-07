@@ -12,8 +12,19 @@ Upload a drawing for each floor (Ground, First, Top floor…), tell the app how 
 **What the agents produce.** A furnished 3D model with textured floors, a Dollhouse view, villa front styles with evening lighting, furnished 2D plans, and electrical plans: switchboards, sockets, power points, lights, fans, AC, geyser, EV, the DB, and colour-coded circuits with MCB and wire sizes. Each agent follows a built-in architect's playbook (NBC room minimums, zoning, ventilation, electrical practice).
 
 - `dreamhouse/index.html` – the website, served at `/dreamhouse` (Three.js 3D viewer, no build step)
-- `api/analyze.js` – Vercel serverless function that sends the image to the Claude API
+- `api/analyze.js` – Vercel serverless function that sends each page to the AI (Google Gemini or Claude, whichever key you set)
 - Access is protected by a password you choose, so only you can run the AI.
+
+## Choose the AI
+
+Set **one** of these in Vercel → Settings → Environment Variables (plus `APP_PASSWORD`), then redeploy:
+
+| Provider | Variable | Where to get it | Optional |
+|---|---|---|---|
+| Google Gemini | `GEMINI_API_KEY` | aistudio.google.com → Get API key | `GEMINI_MODEL` (default `gemini-3.8-flash`) |
+| Claude | `ANTHROPIC_API_KEY` | Claude Console → API keys (starts with `sk-ant-api03-`) | `CLAUDE_MODEL`, `ANTHROPIC_WORKSPACE_ID` |
+
+If both keys are set, Gemini is used unless you also set `AI_PROVIDER=claude`. Gemini's free tier allows only a few requests per minute; if an agent shows a limit error, wait a minute and press Retry.
 
 ## Deploy to Vercel (about 5 minutes)
 
