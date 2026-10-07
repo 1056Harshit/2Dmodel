@@ -198,6 +198,49 @@ button:active{transform:scale(.98)}
 .sug,.swatch,.phases li{animation:fadeIn .5s ease both}
 @media (prefers-reduced-motion:reduce){.bp .ln{animation:none;stroke-dashoffset:0}.stage::after{transition:none}.enter,.hero-copy>*,.sug,.swatch,.phases li{animation:none}.fcard,.fcard img,.stage{transition:none}}
 
+/* pages + agents */
+.pages{display:flex;flex-direction:column;gap:12px}
+.pg{display:grid;grid-template-columns:minmax(0,200px) minmax(0,1fr);gap:14px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--bg)}
+@media (max-width:620px){.pg{grid-template-columns:minmax(0,1fr)}}
+.pg-img{position:relative;align-self:start}
+.pg-img img{width:100%;max-height:220px;object-fit:contain;background:#fff;border-radius:6px;border:1px solid var(--line);display:block}
+.agent-tag{position:absolute;left:8px;top:8px;background:var(--accent);color:var(--accent-ink);font-family:var(--f-mono);font-size:11px;padding:2px 8px;border-radius:999px}
+.pg-body{display:flex;flex-direction:column;gap:10px;min-width:0}
+.pg-body .name{font-size:12.5px;color:var(--muted);overflow-wrap:anywhere}
+.board{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:16px}
+.board-head{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;align-items:center}
+.board-head .bp{width:150px}
+@media (max-width:520px){.board-head{grid-template-columns:minmax(0,1fr)}.board-head .bp{width:120px}}
+.agents{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.ag{display:grid;grid-template-columns:38px minmax(0,1fr);gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px;transition:border-color .3s, box-shadow .3s}
+.ag.working{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.ag.failed{border-color:var(--hi)}
+.ag-n{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:var(--soft);color:var(--ink);font-family:var(--f-display);font-weight:700;font-size:16px;flex:none}
+.ag.done .ag-n{background:var(--lo);color:#fff}
+.ag.working .ag-n{background:var(--accent);color:var(--accent-ink)}
+.ag-b{display:flex;flex-direction:column;gap:6px;min-width:0}
+.ag-s{font-size:13.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.ag.failed .ag-s{color:var(--hi)}
+.pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:p 1s infinite ease-in-out;flex:none}
+.mini-chips{display:flex;flex-wrap:wrap;gap:4px}
+.mini-chips span{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);background:var(--bg)}
+.team{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.team li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:start}
+.plan-sheet{border:1px solid var(--line);border-radius:8px;overflow:auto;background:#fff;max-height:560px}
+.plan-sheet svg{display:block;width:100%;height:auto;min-width:420px}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12.5px;color:var(--muted)}
+.legend span{display:inline-flex;align-items:center;gap:4px}
+.wire{display:inline-block;width:18px;height:4px;border-radius:2px;margin-right:8px;vertical-align:middle}
+.mat.num td:not(:first-child),.mat.num th:not(:first-child){text-align:center;font-variant-numeric:tabular-nums}
+.fin-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.fin{border:1px solid var(--line);border-radius:8px;padding:12px;display:flex;flex-direction:column;gap:6px}
+.fin h4{margin:0;font-size:14px}
+.fin dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 10px;font-size:13px}
+.fin dt{color:var(--muted);font-family:var(--f-mono);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding-top:2px}
+.fin dd{margin:0}
+.chipc{display:inline-block;width:12px;height:12px;border-radius:3px;border:1px solid var(--line);margin-right:6px;vertical-align:-1px}
+@media (prefers-reduced-motion:reduce){.pulse{animation:none}}
+
 /* export sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(10,14,16,.5);display:flex;align-items:flex-end;justify-content:center;z-index:50;padding:16px}
 @media (min-width:640px){.sheet-bg{align-items:center}}
@@ -262,19 +305,20 @@ button:active{transform:scale(.98)}
       <div class="steps"><span id="st1" class="on">1 · Drawings</span><span id="st2">2 · Your wishes</span></div>
 
       <div class="card" id="step1">
-        <div class="stack"><h2>Upload your drawings</h2><p class="muted">One drawing per floor. Tell us which floor each one is so we can stack them into the full house. Up to 4 floors.</p></div>
-        <div class="drawings" id="drawings"></div>
+        <div class="stack"><h2>Upload your drawings</h2><p class="muted">Add images or a multi-page PDF. Each page gets its own design agent: tell it which floor the page is, what to work on, and what you want on that floor. Up to 6 pages.</p></div>
+        <p class="label" id="pageCount"></p>
+        <div class="pages" id="drawings"></div>
         <label class="drop" id="drop" for="file">
-          <span><b>Add a drawing</b> or drop images here</span>
-          <small>JPG, PNG or WebP · floor plan, hand sketch or site map. For a PDF, screenshot the plan page.</small>
-          <input type="file" id="file" accept="image/jpeg,image/png,image/webp,image/gif" multiple>
+          <span><b>Add drawings or a PDF</b> or drop them here</span>
+          <small>PDF, JPG, PNG or WebP · floor plans, hand sketches or site maps. Every PDF page becomes its own floor.</small>
+          <input type="file" id="file" accept="application/pdf,.pdf,image/jpeg,image/png,image/webp,image/gif" multiple>
         </label>
         <div class="status" id="s1status" role="status"></div>
         <div class="row between"><button id="cancelWiz">Cancel</button><button class="primary" id="toStep2">Next: your wishes</button></div>
       </div>
 
       <div class="card" id="step2" hidden>
-        <div class="stack"><h2>How do you want to live?</h2><p class="muted">We'll use this to propose an improved layout and design. Skip anything you're unsure about.</p></div>
+        <div class="stack"><h2>How do you want to live?</h2><p class="muted">These wishes go to every agent and the lead architect. Skip anything you're unsure about.</p></div>
         <div class="field-grid">
           <div class="field"><label class="label" for="pFacing">Main entrance faces</label>
             <select id="pFacing"><option value="">Not sure</option><option>North</option><option>East</option><option>South</option><option>West</option><option>North-East</option><option>North-West</option><option>South-East</option><option>South-West</option></select></div>
@@ -315,20 +359,23 @@ button:active{transform:scale(.98)}
         <div class="field" id="pwWrap" hidden><label class="label" for="pw">Access password</label>
           <input type="password" id="pw" autocomplete="current-password" placeholder="Your site password"></div>
         <div class="status" id="s2status" role="status"></div>
-        <div class="row between"><button id="back1">Back</button><button class="primary" id="generate">Build my 3D home</button></div>
+        <div class="row between"><button id="back1">Back</button><button class="primary" id="generate">Start the design team</button></div>
       </div>
     </div>
   </section>
 
-  <!-- LOADING -->
+  <!-- AGENT BOARD -->
   <section id="v-loading" hidden>
-    <div class="card loading">
-      <svg class="bp" viewBox="0 0 240 170" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-        <path class="ln" d="M20 20 H220 V150 H20 Z"/><path class="ln" d="M20 80 H130 V150"/><path class="ln" d="M130 20 V80 H220"/>
-        <path class="ln" d="M70 80 V120 H130"/><path class="ln" d="M175 80 V150"/><path class="ln dim-l" d="M20 10 H220 M20 6 V14 M220 6 V14"/></g></svg>
-      <h2 id="loadMsg">Reading your drawings</h2>
-      <p class="muted" id="loadTime">A full house usually takes 1 to 3 minutes.</p>
-      <button id="stop">Stop</button>
+    <div class="board">
+      <div class="board-head">
+        <svg class="bp" viewBox="0 0 240 170" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+          <path class="ln" d="M20 20 H220 V150 H20 Z"/><path class="ln" d="M20 80 H130 V150"/><path class="ln" d="M130 20 V80 H220"/>
+          <path class="ln" d="M70 80 V120 H130"/><path class="ln" d="M175 80 V150"/><path class="ln dim-l" d="M20 10 H220 M20 6 V14 M220 6 V14"/></g></svg>
+        <div class="stack" style="gap:6px"><h2>Your design team is working</h2><p class="muted">One agent per page works on its floor in parallel. The lead architect then combines them into the whole home.</p><p class="label" id="boardTime"></p></div>
+      </div>
+      <ol class="agents" id="agentList"></ol>
+      <div class="status" id="boardStatus" role="status"></div>
+      <div class="row between"><button id="stop">Stop</button><div class="row"><button id="boardBack" hidden>Back to pages</button><button class="primary" id="boardResults" hidden>Continue with finished floors</button></div></div>
     </div>
   </section>
 
@@ -347,7 +394,8 @@ button:active{transform:scale(.98)}
         <div class="res-slot" id="resSlot"></div>
         <div class="controls">
           <div class="ctl"><span class="label">View</span><div class="seg" role="group" aria-label="View" id="segView">
-            <button data-v="exterior" aria-pressed="true">Full home</button><button data-v="cutaway" aria-pressed="false">Cutaway</button></div></div>
+            <button data-v="exterior" aria-pressed="true">Full home</button><button data-v="dollhouse" aria-pressed="false">Dollhouse</button><button data-v="cutaway" aria-pressed="false">Plan cut</button></div></div>
+          <div class="ctl"><span class="label">Show</span><button class="tog" data-layer="furniture" aria-pressed="true">Furniture</button><button class="tog" data-layer="electrical" aria-pressed="false">Wiring</button></div>
           <div class="ctl"><span class="label">Floor</span><div class="seg" role="group" aria-label="Floor" id="segFloor"></div></div>
           <div class="ctl" id="verCtl"><span class="label">Layout</span><div class="seg" role="group" aria-label="Layout version" id="segVer">
             <button data-ver="original" aria-pressed="false">As drawn</button><button data-ver="proposed" aria-pressed="true">Proposed</button></div></div>
@@ -362,6 +410,8 @@ button:active{transform:scale(.98)}
         <div class="tabs" role="tablist" id="tabs">
           <button role="tab" data-t="overview" aria-selected="true">Overview</button>
           <button role="tab" data-t="rooms" aria-selected="false">Rooms</button>
+          <button role="tab" data-t="interior" aria-selected="false">Interior</button>
+          <button role="tab" data-t="electrical" aria-selected="false">Electrical</button>
           <button role="tab" data-t="suggestions" aria-selected="false">Suggestions</button>
           <button role="tab" data-t="design" aria-selected="false">Design</button>
           <button role="tab" data-t="plan" aria-selected="false">Build plan</button>
@@ -389,7 +439,7 @@ button:active{transform:scale(.98)}
       <div class="seg" role="group" id="exFmt"><button data-f="png" aria-pressed="true">PNG</button><button data-f="jpg" aria-pressed="false">JPEG</button><button data-f="pdf" aria-pressed="false">PDF report</button></div></div>
     <div class="field"><span class="label">Resolution</span>
       <div class="seg" role="group" id="exRes"><button data-r="1920" aria-pressed="false">Full HD 1920×1080</button><button data-r="3840" aria-pressed="true">4K 3840×2160</button></div></div>
-    <p class="muted" style="font-size:13.5px">PNG and JPEG capture the 3D view as you see it now. The PDF report includes the full home, every floor, rooms, suggestions, design palette and build plan.</p>
+    <p class="muted" style="font-size:13.5px">PNG and JPEG capture the 3D view as you see it now. The PDF report includes the full home, every floor, furnished and electrical plans, suggestions, design palette and build plan.</p>
     <div class="status" id="exStatus" role="status"></div>
     <div class="row between"><button id="exCancel">Close</button><button class="primary" id="exGo">Export</button></div>
   </div>
@@ -402,7 +452,7 @@ button:active{transform:scale(.98)}
 "use strict";
 const $ = id => document.getElementById(id);
 const IS_CLAUDE = !!window.claude;
-const FLOOR_H = 3.0, WALL_H = 2.8, CUT_H = 1.1, T = 0.14;
+const FLOOR_H = 3.0, WALL_H = 2.8, CUT_H = 1.1, DOLL_H = 2.4, T = 0.14;
 
 const FLOOR_OPTS = [
   {key:"basement",label:"Basement"},{key:"ground",label:"Ground floor"},{key:"first",label:"First floor"},
@@ -478,6 +528,81 @@ const EXAMPLE = {
   notes:"Sample data. Upload your own drawings to replace it."
 };
 
+
+/* example: per-floor agent work */
+Object.assign(EXAMPLE.floors[0], {
+  services:["layout","redesign","interior","flooring","electrical","parking"],
+  summary:"Living, open kitchen and two bedrooms around a central stair, with a covered carport at the front.",
+  finishes:[
+    {room:"Living room", flooring:"Marble-look vitrified tile 800×1600", floorHex:"#E9E2D6", walls:"Lime-white emulsion with teak slat TV wall", wallHex:"#F1ECE2", ceiling:"Gypsum cove with warm LED strip", skirting:"100 mm matching tile", lighting:"3000K downlights + floor lamp", furniture:"3-seater sofa, accent chair, TV unit, coffee table, rug"},
+    {room:"Open kitchen & dining", flooring:"Matte anti-skid porcelain 600×600", floorHex:"#D9D4CC", walls:"Washable emulsion, quartz backsplash", wallHex:"#EFEAE1", ceiling:"Plain POP", skirting:"Tile", lighting:"Pendants over island, under-cabinet LEDs", furniture:"L-kitchen, island, 6-seater dining"},
+    {room:"Bedroom 1", flooring:"Oak-finish laminate", floorHex:"#B98A5E", walls:"Sage accent behind bed", wallHex:"#C9D3C0", ceiling:"Gypsum with cove", skirting:"Wooden 75 mm", lighting:"Warm cove + bedside lamps", furniture:"Queen bed, wardrobe"},
+    {room:"Guest bedroom", flooring:"Oak-finish laminate", floorHex:"#B98A5E", walls:"Warm white", wallHex:"#F2EEE6", ceiling:"Plain POP", skirting:"Wooden 75 mm", lighting:"Ceiling light + reading lamp", furniture:"Double bed, wardrobe, study desk"},
+    {room:"Bath", flooring:"Anti-skid ceramic 300×300", floorHex:"#C9CED0", walls:"Glazed tile to 2.1 m", wallHex:"#E6E9EA", ceiling:"PVC panel", skirting:"—", lighting:"Mirror light", furniture:"WC, vanity"},
+    {room:"Pooja", flooring:"White marble", floorHex:"#F4F1EA", walls:"Teak jaali panel", wallHex:"#C8A27A", ceiling:"Plain", skirting:"Marble", lighting:"Warm spot on the altar", furniture:"Wall-mounted mandir"},
+    {room:"Car parking", flooring:"Interlocking concrete pavers", floorHex:"#A8A094", walls:"Exposed brick panel", wallHex:"#B5633C", ceiling:"Timber pergola", skirting:"—", lighting:"Motion-sensor bulkhead", furniture:"—"}
+  ],
+  furniture:[
+    {type:"tv",name:"TV unit",x:9.5,y:1.3,w:0.4,d:1.8},{type:"sofa",name:"3-seater sofa",x:5.3,y:1.0,w:0.9,d:2.4},{type:"table",name:"Coffee table",x:6.8,y:1.7,w:0.6,d:1.0},
+    {type:"chair",name:"Accent chair",x:7.3,y:3.4,w:0.7,d:0.7},{type:"plant",name:"Fiddle-leaf fig",x:4.25,y:0.25,w:0.4,d:0.4},{type:"plant",name:"Areca palm",x:9.4,y:4.0,w:0.4,d:0.4},
+    {type:"counter",name:"Kitchen counter",x:7.6,y:7.35,w:2.4,d:0.6},{type:"counter",name:"Kitchen counter",x:9.4,y:4.6,w:0.6,d:2.75},{type:"counter",name:"Island",x:6.0,y:5.7,w:1.4,d:0.8},
+    {type:"dining",name:"6-seater dining",x:3.3,y:5.65,w:1.8,d:0.9},
+    {type:"bed",name:"Queen bed",x:1.45,y:9.9,w:1.6,d:2.0},{type:"wardrobe",name:"Wardrobe",x:0.12,y:8.3,w:0.6,d:1.4},{type:"plant",name:"Plant",x:3.95,y:11.45,w:0.35,d:0.35},
+    {type:"bath",name:"WC and vanity",x:4.62,y:8.2,w:0.65,d:1.6},
+    {type:"bed",name:"Double bed",x:7.55,y:10.0,w:1.4,d:1.9},{type:"wardrobe",name:"Wardrobe",x:9.28,y:8.3,w:0.6,d:1.4},{type:"desk",name:"Study desk",x:6.65,y:10.3,w:0.55,d:1.1},
+    {type:"other",name:"Mandir",x:5.1,y:11.35,w:0.8,d:0.5}
+  ],
+  electrical:{ db:{x:4.3,y:0.25},
+    points:[
+      {type:"switchboard",room:"Living room",x:6.45,y:0.12,h:1.2,note:"8-module"},{type:"socket",room:"Living room",x:9.88,y:3.6},{type:"socket",room:"Living room",x:4.12,y:3.6},
+      {type:"tv",room:"Living room",x:9.88,y:1.8,h:0.5},{type:"ac",room:"Living room",x:4.12,y:2.2},{type:"light",room:"Living room",x:5.8,y:2.2},{type:"light",room:"Living room",x:8.2,y:2.2},{type:"fan",room:"Living room",x:7.0,y:2.25},
+      {type:"switchboard",room:"Open kitchen & dining",x:2.65,y:4.65},{type:"power",room:"Open kitchen & dining",x:9.88,y:7.3,note:"Fridge"},{type:"power",room:"Open kitchen & dining",x:9.88,y:5.2,note:"Microwave"},
+      {type:"socket",room:"Open kitchen & dining",x:7.5,y:7.88,h:1.1},{type:"socket",room:"Open kitchen & dining",x:8.6,y:7.88,h:1.1},{type:"exhaust",room:"Open kitchen & dining",x:9.88,y:6.3},
+      {type:"light",room:"Open kitchen & dining",x:4.2,y:6.25},{type:"light",room:"Open kitchen & dining",x:6.2,y:6.25},{type:"light",room:"Open kitchen & dining",x:8.3,y:6.25},
+      {type:"switchboard",room:"Staircase",x:2.35,y:4.65,note:"2-way"},{type:"light",room:"Staircase",x:1.25,y:6.25},
+      {type:"switchboard",room:"Bedroom 1",x:4.35,y:8.15},{type:"socket",room:"Bedroom 1",x:1.2,y:11.88},{type:"socket",room:"Bedroom 1",x:3.2,y:11.88},{type:"socket",room:"Bedroom 1",x:0.12,y:9.8},
+      {type:"ac",room:"Bedroom 1",x:2.25,y:8.12},{type:"light",room:"Bedroom 1",x:2.25,y:10.4},{type:"fan",room:"Bedroom 1",x:2.25,y:9.5},
+      {type:"geyser",room:"Bath",x:5.5,y:8.12},{type:"exhaust",room:"Bath",x:6.38,y:9.6},{type:"light",room:"Bath",x:5.6,y:9.2},
+      {type:"light",room:"Pooja",x:5.5,y:11.1},{type:"socket",room:"Pooja",x:6.38,y:11.6},
+      {type:"switchboard",room:"Guest bedroom",x:6.65,y:8.15},{type:"ac",room:"Guest bedroom",x:8.25,y:11.88},{type:"fan",room:"Guest bedroom",x:8.25,y:10.2},{type:"light",room:"Guest bedroom",x:8.25,y:9.2},
+      {type:"socket",room:"Guest bedroom",x:9.88,y:9.5},{type:"socket",room:"Guest bedroom",x:6.62,y:10.9},
+      {type:"light",room:"Car parking",x:2.0,y:2.25},{type:"ev",room:"Car parking",x:0.12,y:3.6},{type:"bell",room:"Living room",x:6.4,y:-0.05}
+    ],
+    circuits:[
+      {name:"Lights & fans L1",mcb:"6A",wire:"1.5 sq mm FR copper",rooms:["Living room","Car parking","Kitchen & dining","Staircase"],runs:[[[4.3,0.25],[4.3,2.2],[5.8,2.2],[8.2,2.2]],[[4.3,2.2],[2.0,2.25]],[[4.3,2.2],[4.3,6.25],[8.3,6.25]],[[4.3,6.25],[1.25,6.25]]]},
+      {name:"Lights & fans L2",mcb:"6A",wire:"1.5 sq mm FR copper",rooms:["Bedroom 1","Bath","Pooja","Guest bedroom"],runs:[[[4.3,6.25],[4.3,9.2],[2.25,9.2],[2.25,10.4]],[[4.3,9.2],[8.25,9.2],[8.25,10.2]],[[5.5,9.2],[5.5,11.1]]]},
+      {name:"Sockets S1",mcb:"16A",wire:"2.5 sq mm FR copper",rooms:["Living room","Kitchen counter"],runs:[[[4.3,0.25],[4.12,0.6],[4.12,3.6]],[[4.3,0.25],[9.88,0.25],[9.88,3.6]],[[4.12,3.6],[4.12,7.7],[8.6,7.7]]]},
+      {name:"Sockets S2",mcb:"16A",wire:"2.5 sq mm FR copper",rooms:["Bedroom 1","Pooja","Guest bedroom"],runs:[[[4.12,7.7],[4.12,8.4],[0.12,8.4],[0.12,11.88],[3.2,11.88]],[[4.12,8.4],[6.62,8.4],[6.62,11.6],[6.38,11.6]],[[6.62,8.4],[9.88,8.4],[9.88,9.5]]]},
+      {name:"Kitchen power P1",mcb:"16A",wire:"2.5 sq mm FR copper",rooms:["Fridge","Microwave"],runs:[[[4.3,0.25],[9.7,0.4],[9.7,7.3],[9.88,7.3]]]},
+      {name:"AC — living & bed 1",mcb:"20A",wire:"4 sq mm FR copper",rooms:["Living room","Bedroom 1"],runs:[[[4.3,0.25],[4.3,2.2],[4.12,2.2]],[[4.3,2.2],[4.3,8.0],[2.25,8.0],[2.25,8.12]]]},
+      {name:"AC — guest + geyser (RCCB)",mcb:"20A",wire:"4 sq mm FR copper",rooms:["Guest bedroom","Bath"],runs:[[[4.3,0.25],[4.45,7.9],[8.25,7.9],[8.25,11.88]],[[5.5,7.9],[5.5,8.12]]]},
+      {name:"EV charger",mcb:"32A",wire:"6 sq mm FR copper",rooms:["Car parking"],runs:[[[4.3,0.25],[0.12,0.25],[0.12,3.6]]]}
+    ],
+    notes:["DB with a 30 mA RCCB next to the main door at 1.8 m; keep a spare 63A slot for solar.","Two-way switches at the bottom and top of the staircase.","Concealed PVC conduits run along the ceiling slab and drop down walls to each board.","Geyser and bath sockets on the RCCB-protected circuit."] },
+  parking:{style:"Covered carport with timber pergola", cars:1, canopy:true, surface:"Interlocking concrete pavers", features:["7 kW EV charger point","Motion-sensor light","Sloped for drainage"], detail:"Open on two sides for airflow; pergola slats cut summer sun but keep the front bright."}
+});
+Object.assign(EXAMPLE.floors[1], {
+  services:["layout","redesign","interior","flooring"],
+  summary:"Family lounge facing the balcony garden, a home office, and the master suite with walk-in wardrobe.",
+  finishes:[
+    {room:"Family lounge", flooring:"Engineered oak", floorHex:"#B98A5E", walls:"Lime white with terracotta accent", wallHex:"#F1ECE2", ceiling:"Gypsum with cove", lighting:"Warm cove + track lights", furniture:"Sofa, coffee table, TV wall"},
+    {room:"Master bedroom", flooring:"Engineered oak", floorHex:"#A9784E", walls:"Fabric panel headboard wall", wallHex:"#D8CCBB", ceiling:"Gypsum with cove", lighting:"Cove + pendant bedside lights", furniture:"King bed, TV, reading chair"},
+    {room:"Home office", flooring:"Oak-finish laminate", floorHex:"#B98A5E", walls:"Acoustic felt panels", wallHex:"#9DB39A", ceiling:"Plain POP", lighting:"4000K task light", furniture:"Desk, chair, bookshelf"},
+    {room:"Balcony garden", flooring:"Wood-plastic composite deck", floorHex:"#8A6A48", walls:"Exterior texture paint", wallHex:"#E8E1D5", ceiling:"Open", lighting:"Solar bollards", furniture:"Planters, 2 lounge chairs"},
+    {room:"Bedroom 3", flooring:"Oak-finish laminate", floorHex:"#B98A5E", walls:"Soft blue accent", wallHex:"#C8D6DE", ceiling:"Plain POP", lighting:"Ceiling light + desk lamp", furniture:"Single bed, study desk"}
+  ],
+  furniture:[
+    {type:"tv",name:"TV wall",x:9.5,y:1.3,w:0.4,d:1.8},{type:"sofa",name:"Sofa",x:5.4,y:0.9,w:0.9,d:2.6},{type:"table",name:"Coffee table",x:6.9,y:1.7,w:0.6,d:1.0},{type:"plant",name:"Plant",x:4.25,y:4.0,w:0.4,d:0.4},
+    {type:"plant",name:"Planter",x:0.3,y:0.3,w:0.5,d:0.5},{type:"plant",name:"Planter",x:3.2,y:0.3,w:0.5,d:0.5},{type:"plant",name:"Planter",x:0.3,y:3.6,w:0.5,d:0.5},
+    {type:"chair",name:"Lounge chair",x:1.3,y:1.8,w:0.65,d:0.65},{type:"chair",name:"Lounge chair",x:2.4,y:1.8,w:0.65,d:0.65},
+    {type:"desk",name:"Desk",x:2.65,y:5.2,w:0.7,d:1.6},{type:"wardrobe",name:"Bookshelf",x:5.75,y:4.65,w:0.6,d:1.6},
+    {type:"bath",name:"WC and vanity",x:6.62,y:4.65,w:0.65,d:1.6},
+    {type:"bed",name:"King bed",x:1.7,y:9.85,w:1.8,d:2.05},{type:"tv",name:"TV",x:1.7,y:8.15,w:1.8,d:0.4},{type:"chair",name:"Reading chair",x:4.4,y:10.9,w:0.7,d:0.7},
+    {type:"bath",name:"WC and vanity",x:5.65,y:8.12,w:1.6,d:0.65},{type:"wardrobe",name:"Walk-in wardrobe",x:5.6,y:11.3,w:1.8,d:0.6},
+    {type:"bed",name:"Single bed",x:8.2,y:10.0,w:1.2,d:1.9},{type:"desk",name:"Study desk",x:9.3,y:8.3,w:0.6,d:1.1}
+  ]
+});
+
 /* ---------------- room colours ---------------- */
 const TYPE_COLORS = {living:0xD9C7A4,dining:0xE2CFA0,kitchen:0xC9D6B5,bedroom:0xB8C9D9,bath:0xA9D3D4,balcony:0xCFE0BE,terrace:0xCFE0BE,
   corridor:0xD8D4CC,utility:0xC9C2D4,garage:0xBFBFBF,parking:0xBFBFBF,garden:0x9FCB8F,stair:0xC7B299,pooja:0xE8C27A,study:0xB9C4AE,other:0xD5D0C8};
@@ -486,7 +611,7 @@ const hex = n => "#" + n.toString(16).padStart(6,"0");
 const esc = s => { const d=document.createElement("div"); d.textContent = s ?? ""; return d.innerHTML; };
 
 /* ---------------- state ---------------- */
-const state = { plan:EXAMPLE, view:"exterior", floorSel:"all", version:"proposed", tab:"overview", selected:null, drawings:[], facade:"modern", light:"day", explode:false, touring:false };
+const state = { plan:EXAMPLE, view:"exterior", floorSel:"all", version:"proposed", tab:"overview", selected:null, drawings:[], facade:"modern", light:"day", explode:false, touring:false, layers:{furniture:true, electrical:false}, elecFloor:null };
 
 /* ---------------- 3D engine ---------------- */
 const RM = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -502,7 +627,7 @@ const hemi = new THREE.HemisphereLight(0xffffff, 0x8a8a8a, 0.78); scene.add(hemi
 const sun = new THREE.DirectionalLight(0xffffff, 0.72);
 sun.castShadow = true; sun.shadow.mapSize.set(2048,2048); sun.shadow.bias = -0.0005; scene.add(sun); scene.add(sun.target);
 let group = new THREE.Group(); scene.add(group);
-let roomMeshes = [], tgt = null, role = "wall", glow = 0, glowMats = [], swayers = [], waterMat = null, floorGroups = [], car = null, gates = [];
+let roomMeshes = [], tgt = null, role = "wall", glow = 0, glowMats = [], swayers = [], waterMat = null, floorGroups = [], car = null, gates = [], fans = [], glowSprites = [];
 const EXPLODE = 2.6;
 
 /* ---- tweens ---- */
@@ -532,7 +657,7 @@ for(let i=0;i<7;i++){
   const c = new THREE.Group(), n = 3 + i%3;
   for(let j=0;j<n;j++){ const s = new THREE.Mesh(new THREE.IcosahedronGeometry(1,1), cloudMat);
     s.position.set(j*1.15 - n*0.55, ((j*7)%3)*0.18, ((j*5)%3)*0.25); s.scale.setScalar(0.85 + ((i+j)%3)*0.25); c.add(s); }
-  c.position.set(-34 + i*10, 13 + (i%3)*2.2, (i%2 ? 16 : -14) + (i%3)*3);
+  c.position.set(-34 + i*10, 26 + (i%3)*3, (i%2 ? 30 : -30) + (i%3)*4); c.scale.setScalar(1.6);
   c.userData.speed = 0.35 + 0.2*(i%3); sky.add(c); clouds.push(c);
 }
 const starPts = [];
@@ -541,6 +666,172 @@ for(let i=0;i<600;i++){ const th = Math.random()*Math.PI*2, ph = Math.random()*M
 const starGeo = new THREE.BufferGeometry(); starGeo.setAttribute("position", new THREE.Float32BufferAttribute(starPts, 3));
 const starMat = new THREE.PointsMaterial({color:0xffffff, size:1.6, sizeAttenuation:false, transparent:true, opacity:0, depthWrite:false});
 sky.add(new THREE.Points(starGeo, starMat));
+
+/* ---- procedural textures ---- */
+const TEX = {}, TEX_M = {wood:0.9, tile:1.2, small:0.9, paver:1.2, grass:2.5, stone:1.6, slat:1.2};
+function canvasTex(draw, size=256){
+  const c = document.createElement("canvas"); c.width = c.height = size;
+  const g = c.getContext("2d"); draw(g, size);
+  const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.anisotropy = 8; return t;
+}
+function shade(g, x, y, w, h, l){ const v = Math.round(255*l); g.fillStyle = `rgb(${v},${v},${v})`; g.fillRect(x, y, w, h); }
+function makeTextures(){
+  const R = (a,b)=>a + Math.random()*(b-a);
+  TEX.wood = canvasTex((g,s)=>{ const rows = 5, rh = s/rows;
+    for(let r=0;r<rows;r++){ let x = -R(0, s*0.6);
+      while(x < s){ const len = R(s*0.45, s*0.9); shade(g, x, r*rh, len, rh, R(.80,.97));
+        for(let k=0;k<6;k++){ g.fillStyle = `rgba(80,50,20,${R(.04,.1)})`; g.fillRect(x, r*rh + R(2, rh-2), len, 1); }
+        g.fillStyle = "rgba(60,35,15,.35)"; g.fillRect(x, r*rh, 2, rh); x += len; }
+      g.fillStyle = "rgba(60,35,15,.3)"; g.fillRect(0, r*rh, s, 1.5); } });
+  TEX.tile = canvasTex((g,s)=>{ shade(g,0,0,s,s,.97); for(let i=0;i<2;i++) for(let j=0;j<2;j++) shade(g, i*s/2+1, j*s/2+1, s/2-2, s/2-2, R(.93,.99));
+    for(let k=0;k<7;k++){ g.strokeStyle = `rgba(120,110,100,${R(.06,.14)})`; g.lineWidth = R(.6,1.6); g.beginPath(); let x = R(0,s), y = R(0,s); g.moveTo(x,y); for(let q=0;q<5;q++){ x += R(-40,60); y += R(-30,50); g.lineTo(x,y); } g.stroke(); }
+    g.fillStyle = "rgba(90,85,80,.35)"; g.fillRect(0,0,s,1.5); g.fillRect(0,s/2,s,1.5); g.fillRect(0,0,1.5,s); g.fillRect(s/2,0,1.5,s); });
+  TEX.small = canvasTex((g,s)=>{ shade(g,0,0,s,s,.9); const n = 3, t = s/n; for(let i=0;i<n;i++) for(let j=0;j<n;j++) shade(g, i*t+2, j*t+2, t-4, t-4, R(.9,.98)); });
+  TEX.paver = canvasTex((g,s)=>{ shade(g,0,0,s,s,.55); const rows = 8, h = s/rows, w = s/4;
+    for(let r=0;r<rows;r++){ const off = (r%2)*w/2; for(let x=-w;x<s+w;x+=w) shade(g, x+off+2, r*h+2, w-4, h-4, R(.78,.95)); } });
+  TEX.grass = canvasTex((g,s)=>{ shade(g,0,0,s,s,.85); for(let k=0;k<2600;k++){ const l = R(.62,1); g.fillStyle = `rgba(${Math.round(255*l*.82)},${Math.round(255*l)},${Math.round(255*l*.7)},.55)`; g.fillRect(R(0,s), R(0,s), 1.5, R(2,5)); } });
+  TEX.stone = canvasTex((g,s)=>{ shade(g,0,0,s,s,.45); let y = 0; while(y < s){ const h = R(14,30); let x = -R(0,40); while(x < s){ const w = R(40,110); shade(g, x+1.5, y+1.5, w-3, h-3, R(.68,.95)); x += w; } y += h; } });
+  TEX.slat = canvasTex((g,s)=>{ const n = 8, w = s/n; for(let i=0;i<n;i++){ shade(g, i*w, 0, w-3, s, R(.82,.96)); g.fillStyle = "rgba(40,25,10,.55)"; g.fillRect(i*w+w-3, 0, 3, s); } });
+}
+makeTextures();
+function texMat(kind, w, d, color, rough=.9){
+  const map = TEX[kind].clone(); map.needsUpdate = true; map.repeat.set(Math.max(.2, w/TEX_M[kind]), Math.max(.2, d/TEX_M[kind]));
+  return new THREE.MeshStandardMaterial({color: new THREE.Color(color), map, roughness:rough});
+}
+let coneTex = null;
+function lightCone(){
+  if(coneTex) return coneTex;
+  coneTex = canvasTex((g,s)=>{ for(let i=0;i<24;i++){ const k = i/24; g.fillStyle = `rgba(255,${Math.round(190+40*k)},${Math.round(120+80*k)},${0.05})`;
+    g.beginPath(); g.moveTo(s/2 - 6 - k*s*0.05, 0); g.lineTo(s/2 + 6 + k*s*0.05, 0); g.lineTo(s/2 + s*(0.42-k*0.35), s*(1-k*0.5)); g.lineTo(s/2 - s*(0.42-k*0.35), s*(1-k*0.5)); g.fill(); } }, 128);
+  coneTex.wrapS = coneTex.wrapT = THREE.ClampToEdgeWrapping;
+  return coneTex;
+}
+/* wall-washer: lamp + two glowing beams (up and down), visible in the evening */
+function wallWasher(x, y, z, M){
+  role = "pop"; box(0.12, 0.12, 0.1, M.lamp, x, y, z);
+  [1,-1].forEach(dir=>{
+    const m = new THREE.Mesh(new THREE.PlaneGeometry(0.9, 1.3), new THREE.MeshBasicMaterial({map:lightCone(), transparent:true, opacity:0.85*glow, blending:THREE.AdditiveBlending, depthWrite:false}));
+    m.position.set(x, y + dir*0.68, z - 0.06); m.rotation.y = Math.PI; if(dir<0) m.rotation.z = Math.PI;
+    m.userData.role = "glow"; m.renderOrder = 5; (tgt||group).add(m); glowSprites.push(m.material);
+  });
+}
+
+/* ---- furniture ---- */
+function roomAt(rooms, x, y){ return rooms.find(r=>x>=r.x-0.05 && x<=r.x+r.w+0.05 && y>=r.y-0.05 && y<=r.y+r.d+0.05); }
+function furniture(it, rooms, cx, cz, e, M, H){
+  const along = it.w >= it.d;                    // long axis along x?
+  const L = along ? it.w : it.d, S = along ? it.d : it.w;
+  const ox = it.x + it.w/2 - cx, oz = it.y + it.d/2 - cz;
+  const room = roomAt(rooms, it.x + it.w/2, it.y + it.d/2);
+  // which short-axis side is closer to a wall (-1 / +1); which long-axis end is closer to a wall
+  let sideS = -1, sideL = -1;
+  if(room){
+    if(along){ sideS = (it.y - room.y) <= (room.y + room.d - it.y - it.d) ? -1 : 1; sideL = (it.x - room.x) <= (room.x + room.w - it.x - it.w) ? -1 : 1; }
+    else { sideS = (it.x - room.x) <= (room.x + room.w - it.x - it.w) ? -1 : 1; sideL = (it.y - room.y) <= (room.y + room.d - it.y - it.d) ? -1 : 1; }
+  }
+  // local helper: place a box using (l = along long axis, s = along short axis) offsets
+  const P = (l, s, h, mat, ol, os, y) => along ? box(l, h, s, mat, ox+ol, e+y, oz+os) : box(s, h, l, mat, ox+os, e+y, oz+ol);
+  role = "furn";
+  switch(it.type){
+    case "bed": {
+      P(L, S, 0.3, M.darkWood, 0, 0, 0.15);
+      P(L-0.08, S-0.08, 0.2, M.linen, 0, 0, 0.4);
+      P(L*0.55, S-0.04, 0.07, M.duvet, -sideL*L*0.2, 0, 0.53);
+      [-1,1].forEach(k=>P(0.32, S*0.38, 0.12, M.white, sideL*(L/2-0.28), k*S*0.22, 0.56));
+      P(0.08, S+0.1, 1.05, M.darkWood, sideL*(L/2+0.02), 0, 0.52);
+      break; }
+    case "sofa": {
+      P(L, S, 0.42, M.fabric, 0, 0, 0.21);
+      P(L, 0.22, 0.42, M.fabric, 0, sideS*(S/2-0.11), 0.63);
+      [-1,1].forEach(k=>P(0.2, S, 0.25, M.fabric, k*(L/2-0.1), 0, 0.55));
+      for(let i=0;i<Math.max(2, Math.round(L/0.8));i++){ const n = Math.max(2, Math.round(L/0.8)), cw = (L-0.4)/n; P(cw-0.04, S-0.3, 0.1, M.fabric2, -L/2+0.2+cw*(i+0.5), -sideS*0.05, 0.47); }
+      break; }
+    case "dining": {
+      P(L, S, 0.05, M.wood, 0, 0, 0.75);
+      [[-1,-1],[-1,1],[1,-1],[1,1]].forEach(([a,b])=>P(0.06, 0.06, 0.73, M.darkWood, a*(L/2-0.08), b*(S/2-0.08), 0.365));
+      const n = Math.max(1, Math.floor(L/0.6));
+      for(let i=0;i<n;i++){ const l = -L/2 + (i+0.5)*L/n;
+        [-1,1].forEach(k=>{ P(0.42, 0.42, 0.06, M.fabric2, l, k*(S/2+0.22), 0.45); P(0.42, 0.06, 0.45, M.darkWood, l, k*(S/2+0.42), 0.7); [-1,1].forEach(q=>[-1,1].forEach(r=>P(0.04,0.04,0.44,M.darkWood,l+q*0.18,k*(S/2+0.22)+r*0.18,0.22))); }); }
+      break; }
+    case "table": {
+      P(L+1.0, S+0.9, 0.012, M.rug, 0, 0, 0.006);
+      P(L, S, 0.06, M.wood, 0, 0, 0.4);
+      P(L*0.8, S*0.7, 0.36, M.darkWood, 0, 0, 0.19);
+      break; }
+    case "desk": {
+      P(L, S, 0.04, M.wood, 0, 0, 0.75);
+      [-1,1].forEach(k=>P(0.04, S, 0.73, M.wood, k*(L/2-0.02), 0, 0.365));
+      P(0.45, 0.45, 0.06, M.fabric2, 0, -sideS*(S/2+0.15), 0.46); P(0.45, 0.06, 0.5, M.black, 0, -sideS*(S/2+0.37), 0.72);
+      break; }
+    case "wardrobe": {
+      const h = Math.min(2.1, H-0.1);
+      P(L, S, h, M.ward, 0, 0, h/2);
+      const n = Math.max(2, Math.round(L/0.5));
+      for(let i=1;i<n;i++) P(0.015, 0.02, h-0.1, M.darkWood, -L/2 + i*L/n, -sideS*(S/2+0.005), h/2);
+      break; }
+    case "tv": {
+      P(L, S, 0.42, M.darkWood, 0, 0, 0.21);
+      if(H > 1.4) P(Math.min(L*0.75, 1.6), 0.05, 0.75, M.black, 0, sideS*(S/2-0.06), 1.05);
+      break; }
+    case "counter": {
+      P(L, S, 0.84, M.ward, 0, 0, 0.42);
+      P(L+0.02, S+0.02, 0.04, M.granite, 0, 0, 0.86);
+      P(0.6, 0.45, 0.012, M.black, L*0.2, 0, 0.885);
+      P(0.5, 0.35, 0.03, M.steel, -L*0.2, 0, 0.87);
+      if(H >= 2.3) P(L, 0.35, 0.7, M.ward, 0, sideS*(S/2-0.175), 1.85);
+      break; }
+    case "bath": {
+      cyl(0.19, 0.4, M.white, ox + (along ? sideL*(L/2-0.25) : 0), e+0.2, oz + (along ? 0 : sideL*(L/2-0.25)), 16);
+      P(0.2, 0.42, 0.35, M.white, sideL*(L/2-0.08), 0, 0.6);
+      if(L > 1.0){ P(0.6, Math.min(S,0.45), 0.8, M.ward, -sideL*(L/2-0.35), 0, 0.4); P(0.45, 0.35, 0.06, M.white, -sideL*(L/2-0.35), 0, 0.83); }
+      break; }
+    case "plant": {
+      const g = new THREE.Group(); g.position.set(ox, e, oz); g.userData.role = "furn"; (tgt||group).add(g);
+      sub(g, ()=>{ role = "plantpart"; cyl(0.17, 0.4, M.pot, 0, 0.2, 0, 12); ball(0.32, M.leaf, 0, 0.75, 0); ball(0.22, M.leaf2, 0.12, 1.0, 0.08); });
+      swayers.push(g); role = "furn";
+      break; }
+    case "chair": {
+      P(L, S, 0.1, M.fabric2, 0, 0, 0.42); P(L, 0.08, 0.5, M.fabric2, 0, sideS*(S/2-0.04), 0.72);
+      break; }
+    default: P(L, S, 0.6, M.ward, 0, 0, 0.3);
+  }
+}
+
+/* ---- electrical in 3D ---- */
+const CIRCUIT_COLORS = ["#E4572E","#2E86AB","#F2A541","#7B4EA3","#3BB273","#D7263D","#1B998B","#C08A1E"];
+const DEF_H = {switchboard:1.2, socket:0.3, power:1.1, ac:2.2, geyser:1.8, exhaust:2.2, tv:0.5, data:0.3, bell:1.5, ev:1.1, db:1.8};
+function electrical3D(f, cx, cz, e, H, cutLow, M){
+  const el = f.electrical, top = cutLow ? H + 0.35 : H - 0.08;
+  const cap = h => Math.min(h, cutLow ? H + 0.25 : H - 0.15);
+  const MSM = THREE.MeshStandardMaterial;
+  const mk = (c, em=0) => new MSM({color:c, roughness:.4, emissive:c, emissiveIntensity:em});
+  const mat = {switchboard:mk(0xFFFFFF,.15), socket:mk(0xF2F2F2,.1), power:mk(0xE4572E,.3), ac:mk(0xEEF3F6,.1), geyser:mk(0xF5F5F5,.1), exhaust:mk(0x9AA5AB),
+    tv:mk(0x2E86AB,.3), data:mk(0x2E86AB,.3), bell:mk(0xF2A541,.3), ev:mk(0x3BB273,.35), db:mk(0x2F3437), light:M.lamp};
+  role = "elec";
+  el.points.forEach(p=>{
+    const x = p.x - cx, z = p.y - cz, t = p.type;
+    if(t==="light"){ cyl(0.13, 0.04, M.lamp, x, e+top, z, 18); return; }
+    if(t==="fan"){
+      const g = new THREE.Group(); g.position.set(x, e+top-0.1, z); g.userData.role = "elec"; (tgt||group).add(g);
+      sub(g, ()=>{ role = "fanpart"; cyl(0.09, 0.1, M.steel, 0, 0, 0, 12);
+        for(let k=0;k<3;k++){ const geo = new THREE.BoxGeometry(0.62, 0.015, 0.11); geo.translate(0.38, 0, 0); const b = new THREE.Mesh(geo, M.fanBlade); b.rotation.y = k*Math.PI*2/3; add(b); } });
+      fans.push(g); role = "elec"; return;
+    }
+    const h = cap(p.h || DEF_H[t] || 1);
+    const sz = {switchboard:[0.2,0.13,0.2], socket:[0.11,0.11,0.11], power:[0.14,0.14,0.14], ac:[0.9,0.3,0.28], geyser:[0.4,0.55,0.4], exhaust:[0.28,0.28,0.12], db:[0.42,0.52,0.16], ev:[0.28,0.38,0.16]}[t] || [0.12,0.12,0.12];
+    box(sz[0], sz[1], sz[2], mat[t] || mat.socket, x, e+h, z);
+  });
+  if(el.db){ box(0.42, 0.52, 0.16, mat.db, el.db.x-cx, e+cap(1.8), el.db.y-cz); }
+  el.circuits.forEach((c,ci)=>{
+    const wm = new MSM({color:CIRCUIT_COLORS[ci % CIRCUIT_COLORS.length], emissive:CIRCUIT_COLORS[ci % CIRCUIT_COLORS.length], emissiveIntensity:.45, roughness:.5});
+    const y = e + top + 0.04 + ci*0.012;
+    c.runs.forEach(run=>{ for(let i=0;i<run.length-1;i++){
+      const [x1,y1] = run[i], [x2,y2] = run[i+1], dx = x2-x1, dz = y2-y1, len = Math.hypot(dx,dz); if(len < 0.02) continue;
+      role = "wire"; const m = box(len, 0.035, 0.035, wm, (x1+x2)/2-cx, y, (y1+y2)/2-cz); m.rotation.y = -Math.atan2(dz, dx); m.castShadow = false;
+    } });
+  });
+  role = "wall";
+}
 
 function roomsOf(f){ return state.version==="proposed" && f.proposed?.rooms?.length ? f.proposed.rooms : f.rooms; }
 function openingsOf(f){ return state.version==="proposed" && f.proposed?.openings?.length ? f.proposed.openings : (f.openings||[]); }
@@ -578,7 +869,7 @@ function build(animate){
   scene.remove(group);
   group.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } });
   group = new THREE.Group(); scene.add(group);
-  roomMeshes = []; glowMats = []; swayers = []; floorGroups = []; car = null; gates = []; waterMat = null;
+  roomMeshes = []; glowMats = []; swayers = []; floorGroups = []; car = null; gates = []; waterMat = null; fans = []; glowSprites = [];
 
   const all = sortedFloors();
   if(!all.length) return;
@@ -613,7 +904,14 @@ function build(animate){
     water: new MSM({color:0x3FA7D6, roughness:.08, metalness:.1, emissive:0x1E7FB0, emissiveIntensity:.15+0.6*glow}),
     lamp: new MSM({color:0xFFE2B0, emissive:0xFFC46B, emissiveIntensity:0.1+1.4*glow}),
     carBody: new MSM({color:0xA8322A, roughness:.35, metalness:.45}),
-    carGlass: new MSM({color:0x26333B, roughness:.1, metalness:.3})
+    carGlass: new MSM({color:0x26333B, roughness:.1, metalness:.3}),
+    darkWood: new MSM({color:0x5B4330, roughness:.7}), wood: new MSM({color:0xA97C52, roughness:.6}),
+    linen: new MSM({color:0xF2EFEA, roughness:.9}), white: new MSM({color:0xFAFAF8, roughness:.5}),
+    duvet: new MSM({color:(()=>{ const p = state.plan.design?.palette||[]; const c = p.find(x=>/soft|furnish|accent|fabric/i.test(x.use||"")) || p[4] || p[1]; return c && /^#[0-9a-f]{6}$/i.test(c.hex) ? c.hex : "#9DB39A"; })(), roughness:.9}),
+    fabric: new MSM({color:0xD6CEC0, roughness:.95}), fabric2: new MSM({color:0xBDB3A3, roughness:.95}), rug: new MSM({color:0xD9CDB8, roughness:1}),
+    ward: new MSM({color:0xE3D7C4, roughness:.6}), granite: new MSM({color:0x2E2E30, roughness:.3}), black: new MSM({color:0x1A1A1C, roughness:.4}),
+    steel: new MSM({color:0xB8BEC2, roughness:.3, metalness:.6}), pot: new MSM({color:0x8C7A68, roughness:.9}), cap: new MSM({color:0x30363A, roughness:.8}),
+    fanBlade: new MSM({color:0x6B5644, roughness:.6})
   };
   glowMats = [[M.glass,0,0.95],[M.lamp,.1,1.4]];
   waterMat = M.water;
@@ -623,7 +921,7 @@ function build(animate){
   const mg = 4.5;
   const front = B.y0 - cz - mg, back = B.y1 - cz + mg, left = B.x0 - cx - mg, right = B.x1 - cx + mg;
   const g0 = gy - 0.25;
-  role = "lawn"; const lawn = box(BW+2*mg+1.5, 0.12, BD+2*mg+1.5, M.lawn, 0, gy-0.31, 0); lawn.castShadow = false;
+  role = "lawn"; const lawn = box(BW+2*mg+1.5, 0.12, BD+2*mg+1.5, texMat("grass", BW+2*mg+1.5, BD+2*mg+1.5, 0xA9CC8A, 1), 0, gy-0.31, 0); lawn.castShadow = false;
   const groundF = all[0], gRooms = roomsOf(groundF);
   const park = gRooms.find(r=>r.type==="parking"||r.type==="garage");
   const fDoor = openingsOf(groundF).find(o=>o.type==="door" && o.orient==="h" && Math.abs(o.y-B.y0)<0.4);
@@ -649,7 +947,7 @@ function build(animate){
     });
     role = "lawn";
     const dz0 = front, dz1 = park ? park.y + park.d - cz : B.y0 - cz;
-    box(driveW, 0.06, dz1-dz0, M.pave, driveX, gy-0.23, (dz0+dz1)/2).castShadow = false;
+    box(driveW, 0.06, dz1-dz0, texMat("paver", driveW, dz1-dz0, 0xD8D0C4), driveX, gy-0.23, (dz0+dz1)/2).castShadow = false;
     const lz1 = B.y0 - cz;
     for(let i=1;i<=2;i++){ const z = dz0 + (lz1-dz0)*i/3;
       [-1,1].forEach(s=>{ role = "pop"; cyl(0.04, 0.7, M.metal, driveX+s*(driveW/2+0.35), g0+0.35, z, 8); ball(0.09, M.lamp, driveX+s*(driveW/2+0.35), g0+0.75, z); }); }
@@ -690,9 +988,11 @@ function build(animate){
     const e = f.level * FLOOR_H;
     const rooms = roomsOf(f), fb = bbox(rooms); if(!fb) return;
     const isTop = f === topShown, isBase = f.level === baseLevel;
-    const cut = isTop && (state.view === "cutaway" || !!sel);
-    const H = cut ? CUT_H : WALL_H;
+    const cut = isTop && (state.view !== "exterior" || !!sel);
+    const low = cut && (state.view === "cutaway" || (state.view === "exterior" && !!sel));
+    const H = !cut ? WALL_H : low ? CUT_H : DOLL_H;
     const W = fb.x1-fb.x0, D = fb.y1-fb.y0, mx = (fb.x0+fb.x1)/2-cx, mz = (fb.y0+fb.y1)/2-cz, fz = fb.y0-cz, fx0 = fb.x0-cx;
+    const useFinal = !f.proposed || state.version==="proposed";
 
     role = "slab";
     const ov = F==="modern" && !isBase ? 0.7 : T;
@@ -702,7 +1002,7 @@ function build(animate){
     rooms.forEach(r=>{
       const x0 = r.x-cx, z0 = r.y-cz;
       const floor = new THREE.Mesh(new THREE.BoxGeometry(Math.max(r.w-0.02,.1), 0.04, Math.max(r.d-0.02,.1)),
-        new THREE.MeshStandardMaterial({color:colorOf(r.type), roughness:.85}));
+        (()=>{ const lk = floorLook(r, finOf(f, r)); return texMat(lk.kind, r.w, r.d, lk.color, lk.kind==="tile" ? .3 : .85); })());
       floor.position.set(x0+r.w/2, e+0.02, z0+r.d/2); floor.receiveShadow = true;
       floor.userData = {floor:f.key, room:r, role:"slab"}; fg.add(floor); roomMeshes.push(floor);
       const open = ["balcony","terrace","garden","parking","garage"].includes(r.type);
@@ -712,6 +1012,7 @@ function build(animate){
         const mat = open && F==="modern" ? M.rail : open && F==="classic" ? M.trim : M.wall;
         [[r.w,T,x0+r.w/2,z0],[r.w,T,x0+r.w/2,z0+r.d],[T,r.d,x0,z0+r.d/2],[T,r.d,x0+r.w,z0+r.d/2]].forEach(([w,d,x,z])=>{
           box(w+(w>T?T:0), wh, d+(d>T?T:0), mat, x, e+wh/2, z);
+          if(cut) box(w+(w>T?T:0)+0.01, 0.03, d+(d>T?T:0)+0.01, M.cap, x, e+wh+0.015, z);
         });
         if(open && F==="classic") [[r.w,x0+r.w/2,z0,"h"],[r.w,x0+r.w/2,z0+r.d,"h"],[r.d,x0,z0+r.d/2,"v"],[r.d,x0+r.w,z0+r.d/2,"v"]].forEach(([L,x,z,o])=>{
           const n = Math.max(2, Math.floor(L/0.25));
@@ -726,7 +1027,7 @@ function build(animate){
           st.userData.role = "stair"; st.userData.i = i;
         }
       }
-      if(cut){
+      if(low){
         const area = r.w*r.d;
         const s = labelSprite(r.name || r.type, `${area.toFixed(1)} m² · ${Math.round(area*10.764)} ft²`);
         const k = Math.max(1.4, Math.min(2.4, Math.min(r.w,r.d)*0.8));
@@ -746,12 +1047,29 @@ function build(animate){
       box(g[0],g[1],g[2], isDoor?M.door:M.glass, px, e+y0+h/2, pz);
     });
 
+    if(useFinal && state.layers.furniture && f.furniture?.length) f.furniture.forEach(it=>furniture(it, rooms, cx, cz, e, M, H));
+    if(useFinal && state.layers.electrical && f.electrical) electrical3D(f, cx, cz, e, H, low, M);
+    const pk = rooms.find(r=>r.type==="parking"||r.type==="garage");
+    if(pk && f.parking?.canopy && !cut){
+      role = "roof"; const x0 = pk.x-cx, z0 = pk.y-cz, n = Math.max(5, Math.floor(pk.w/0.32));
+      for(let i=0;i<n;i++) box(0.07, 0.14, pk.d+0.3, M.wood, x0+0.15+i*(pk.w-0.3)/(n-1), e+2.66, z0+pk.d/2);
+      [z0+0.12, z0+pk.d-0.12].forEach(z=>box(pk.w+0.2, 0.18, 0.12, M.darkWood, x0+pk.w/2, e+2.52, z));
+      role = "wall"; [[x0+0.12, z0+0.12],[x0+pk.w-0.12, z0+0.12]].forEach(([x,z])=>box(0.16, 2.5, 0.16, M.darkWood, x, e+1.25, z));
+    }
     if(!cut && F==="modern"){
       role = "wall";
-      box(W*0.28, WALL_H, 0.1, M.stone, fx0 + W*0.14, e+WALL_H/2, fz-0.12);
+      box(W*0.28, WALL_H, 0.1, texMat("stone", W*0.28, WALL_H, 0xB4AA9F), fx0 + W*0.14, e+WALL_H/2, fz-0.12);
       if(!isBase || all.length===1){ const n = 9, x1 = fx0 + W*0.6, wd = W*0.34;
         for(let i=0;i<n;i++) box(0.07, WALL_H-0.25, 0.35, M.wood, x1 + i*wd/(n-1), e+WALL_H/2, fz-0.3); }
       if(isBase){ role = "roof"; box(Math.max(2.4,driveW+1), 0.12, 1.7, M.slab, fDoor ? fDoor.x+(fDoor.len||1)/2-cx : mx, e+2.6, fz-0.85); }
+      role = "wall"; box(W+0.3, 0.22, 0.34, M.trim, mx, e+WALL_H+0.11, fz-0.17); box(0.3, WALL_H, 0.34, M.trim, fx0+W*0.56, e+WALL_H/2, fz-0.17);
+      wallWasher(fx0 + W*0.14, e+1.95, fz-0.18, M); wallWasher(fx0 + W*0.56, e+1.95, fz-0.35, M); wallWasher(fx0 + W*0.92, e+1.95, fz-0.08, M);
+      rooms.filter(r=>(r.type==="terrace"||r.type==="balcony") && r.w*r.d > 6).forEach(r=>{
+        role = "roof"; const x0 = r.x-cx, z0 = r.y-cz, n = Math.max(5, Math.floor(r.w/0.4));
+        for(let i=0;i<n;i++) box(0.06, 0.16, r.d, M.black, x0+0.1+i*(r.w-0.2)/(n-1), e+2.7, z0+r.d/2);
+        [x0+0.1, x0+r.w-0.1].forEach(x=>{ role = "wall"; box(0.1, 2.6, 0.1, M.black, x, e+1.3, z0+0.1); });
+        role = "furn"; [0.25, r.w-0.25].forEach(dx=>{ cyl(0.17, 0.45, M.pot, x0+dx, e+0.22, z0+0.3, 12); ball(0.3, M.leaf, x0+dx, e+0.7, z0+0.3); });
+      });
     }
     if(!cut && F==="classic"){
       role = "roof"; box(W+0.36, 0.2, D+0.36, M.trim, mx, e+WALL_H-0.1, mz);
@@ -778,6 +1096,7 @@ function build(animate){
         box(W+1.4, 0.32, D+1.4, M.slab, mx, rt+0.16, mz);
         box(W*0.42, 0.9, D*0.45, M.wall, mx+W*0.2, rt+0.77, mz+D*0.15);
         box(W*0.42+0.6, 0.18, D*0.45+0.6, M.slab, mx+W*0.2, rt+1.3, mz+D*0.15);
+        for(let i=0;i<4;i++){ const px = mx - W/2 + 0.9 + i*(W*0.5-1.4)/3; box(0.9, 0.32, 0.34, M.pot, px, rt+0.48, fz-0.25); box(0.86, 0.22, 0.3, M.hedge, px, rt+0.74, fz-0.25); }
       } else {
         const pw = W+0.5, pd = D+0.5;
         box(pw, 0.2, pd, M.slab, mx, rt+0.1, mz);
@@ -835,6 +1154,7 @@ function animateConstruction(land){
       else if(r==="stair") animGrow(o, T + 350 + o.userData.i*45, 300);
       else if(r==="open") animPop(o, T + rnd(950,1250), 450);
       else if(r==="label") animPop(o, T + 1250, 400);
+      else if(r==="furn" || r==="elec" || r==="wire") animPop(o, T + rnd(1150,1550), 450);
       else if(r==="roof") animDrop(o, roofAt + rnd(0,150), 650, 4);
     });
     T += 1200;
@@ -866,6 +1186,7 @@ function setExplode(on){
 function presetPos(kind){
   const {span=10, midY=1.5, hTop=3} = group.userData;
   if(kind==="top") return {pos:new THREE.Vector3(0, hTop + span*1.4, -0.01), tgt:new THREE.Vector3(0, hTop-2, 0)};
+  if(kind==="high") return {pos:new THREE.Vector3(span*0.62, hTop + span*0.95, -span*0.72), tgt:new THREE.Vector3(0, hTop-FLOOR_H, 0)};
   if(kind==="front") return {pos:new THREE.Vector3(span*0.15, midY + span*0.25, -span*1.25), tgt:new THREE.Vector3(0, midY*0.8, 0)};
   return {pos:new THREE.Vector3(span*0.8, midY + span*0.62, -span*1.05), tgt:new THREE.Vector3(0, midY*0.55, 0)};
 }
@@ -915,6 +1236,7 @@ function applyLight(animate){
     hemi.intensity = a.h + (L.h-a.h)*k; sun.intensity = a.s + (L.s-a.s)*k; glow = a.g + (L.g-a.g)*k;
     hemi.color.copy(a.hc).lerp(b.hc,k); hemi.groundColor.copy(a.hg).lerp(b.hg,k); sun.color.copy(a.sc).lerp(b.sc,k);
     glowMats.forEach(([m,base,amp])=>m.emissiveIntensity = base + amp*glow);
+    glowSprites.forEach(m=>m.opacity = 0.85*glow);
     starMat.opacity = glow*0.95; cloudMat.opacity = 0.92 - 0.55*glow; cloudMat.color.copy(CLOUD_DAY).lerp(CLOUD_EVE, glow);
     placeSun();
   };
@@ -940,6 +1262,7 @@ let lastT = performance.now();
   if(!RM){
     swayers.forEach((t,i)=>{ t.rotation.z = Math.sin(now*0.0011 + i*1.7)*0.035; t.rotation.x = Math.cos(now*0.0009 + i)*0.025; });
     clouds.forEach(c=>{ c.position.x += c.userData.speed*dt; if(c.position.x > 38) c.position.x = -38; });
+    fans.forEach(g=>g.rotation.y += dt*5);
     if(waterMat) waterMat.emissiveIntensity = .15 + .6*glow + Math.sin(now*0.0032)*0.08;
     if(state.touring) tourStep(dt);
   }
@@ -959,6 +1282,116 @@ canvas.addEventListener("pointerup", e=>{
   state.selected = (next && s && next.f===s.f && next.n===s.n) ? null : next;
   highlight();
 });
+
+/* ---------------- 2D plans (furnished + electrical) ---------------- */
+const finOf = (f, r) => (!f.proposed || state.version==="proposed") ? (f.finishes||[]).find(x=>x.room.toLowerCase()===String(r.name).toLowerCase()) : null;
+function floorLook(r, fin){
+  const s = (fin?.flooring||"").toLowerCase();
+  let kind = /wood|laminate|teak|oak|walnut|deck|parquet|bamboo|spc/.test(s) ? "wood" : /paver|interlock|brick|cobble/.test(s) ? "paver" : /grass|lawn|turf/.test(s) ? "grass" : /anti.?skid|ceramic|mosaic|matt/.test(s) ? "small" : s ? "tile" : "";
+  if(!kind) kind = {bedroom:"wood", study:"wood", bath:"small", balcony:"small", terrace:"small", utility:"small", parking:"paver", garage:"paver", garden:"grass"}[r.type] || "tile";
+  const color = fin?.floorHex || {wood:"#B98A5E", tile:"#ECE7DE", small:"#CFD3D5", paver:"#A8A094", grass:"#86AE66"}[kind];
+  return {kind, color};
+}
+const SYM = {switchboard:"Switchboard", socket:"Socket (6A)", power:"Power socket (16A)", light:"Light point", fan:"Fan", ac:"AC point", geyser:"Geyser", exhaust:"Exhaust fan", tv:"TV / cable", data:"Data / Wi-Fi", bell:"Door bell", ev:"EV charger", db:"Distribution board"};
+function symSVG(t, x, y){
+  const k = "#1D2528";
+  switch(t){
+    case "switchboard": return `<rect x="${x-7}" y="${y-5}" width="14" height="10" fill="#fff" stroke="${k}" stroke-width="1.4"/><text x="${x}" y="${y+3.2}" font-size="8" text-anchor="middle" fill="${k}" font-weight="700">S</text>`;
+    case "socket": return `<circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="${k}" stroke-width="1.3"/><line x1="${x-2}" y1="${y-2.5}" x2="${x-2}" y2="${y+2.5}" stroke="${k}"/><line x1="${x+2}" y1="${y-2.5}" x2="${x+2}" y2="${y+2.5}" stroke="${k}"/>`;
+    case "power": return `<circle cx="${x}" cy="${y}" r="6" fill="#E4572E" stroke="${k}" stroke-width="1.2"/><text x="${x}" y="${y+3}" font-size="7.5" text-anchor="middle" fill="#fff" font-weight="700">P</text>`;
+    case "light": return `<circle cx="${x}" cy="${y}" r="7" fill="#FFE8A3" stroke="${k}" stroke-width="1.3"/><path d="M${x-5} ${y-5}L${x+5} ${y+5}M${x+5} ${y-5}L${x-5} ${y+5}" stroke="${k}" stroke-width="1.1"/>`;
+    case "fan": return `<circle cx="${x}" cy="${y}" r="9" fill="#fff" stroke="${k}" stroke-width="1.3"/>${[0,120,240].map(a=>{ const r = a*Math.PI/180; return `<line x1="${x}" y1="${y}" x2="${(x+8*Math.cos(r)).toFixed(1)}" y2="${(y+8*Math.sin(r)).toFixed(1)}" stroke="${k}" stroke-width="2.2"/>`; }).join("")}`;
+    case "ac": return `<rect x="${x-13}" y="${y-5}" width="26" height="10" fill="#DDE9F0" stroke="${k}" stroke-width="1.2"/><text x="${x}" y="${y+3.2}" font-size="7.5" text-anchor="middle" fill="${k}" font-weight="700">AC</text>`;
+    case "db": return `<rect x="${x-10}" y="${y-7}" width="20" height="14" fill="#2F3437"/><text x="${x}" y="${y+3}" font-size="7.5" text-anchor="middle" fill="#fff" font-weight="700">DB</text>`;
+    case "ev": return `<rect x="${x-10}" y="${y-6}" width="20" height="12" rx="2" fill="#3BB273"/><text x="${x}" y="${y+3}" font-size="7.5" text-anchor="middle" fill="#fff" font-weight="700">EV</text>`;
+    default: { const lt = {geyser:"G", exhaust:"EX", tv:"TV", data:"D", bell:"B"}[t] || "?";
+      return `<circle cx="${x}" cy="${y}" r="7" fill="#fff" stroke="${k}" stroke-width="1.2"/><text x="${x}" y="${y+2.8}" font-size="${lt.length>1?6:7.5}" text-anchor="middle" fill="${k}" font-weight="700">${lt}</text>`; }
+  }
+}
+function furnSVG(it, rooms, X, Y, S){
+  const x = +X(it.x), y = +Y(it.y), w = it.w*S, h = it.d*S, along = it.w >= it.d;
+  const room = roomAt(rooms, it.x+it.w/2, it.y+it.d/2);
+  let sideL = -1, sideS = -1;
+  if(room){ if(along){ sideL = (it.x-room.x) <= (room.x+room.w-it.x-it.w) ? -1 : 1; sideS = (it.y-room.y) <= (room.y+room.d-it.y-it.d) ? -1 : 1; }
+    else { sideL = (it.y-room.y) <= (room.y+room.d-it.y-it.d) ? -1 : 1; sideS = (it.x-room.x) <= (room.x+room.w-it.x-it.w) ? -1 : 1; } }
+  const R = (a,b,c,d,f,st="#8A8174",extra="") => `<rect x="${a.toFixed(1)}" y="${b.toFixed(1)}" width="${Math.max(1,c).toFixed(1)}" height="${Math.max(1,d).toFixed(1)}" fill="${f}" stroke="${st}" stroke-width="1" ${extra}/>`;
+  // rect in local long/short coords: l0..l1 along long axis, s0..s1 along short (0..1 fractions)
+  const LR = (l0,l1,s0,s1,f,st,extra) => along ? R(x+w*l0, y+h*s0, w*(l1-l0), h*(s1-s0), f, st, extra) : R(x+w*s0, y+h*l0, w*(s1-s0), h*(l1-l0), f, st, extra);
+  const head = sideL < 0 ? 0 : 1, wall = sideS < 0 ? 0 : 1;
+  switch(it.type){
+    case "bed": return LR(0,1,0,1,"#F4F1EC","#7B6A58") + (head===0 ? LR(0,.05,0,1,"#6E5440","#6E5440") + LR(.07,.2,.08,.46,"#fff","#B9B2A6") + LR(.07,.2,.54,.92,"#fff","#B9B2A6") + LR(.42,1,0,1,"#9DB39A","#7E9579")
+      : LR(.95,1,0,1,"#6E5440","#6E5440") + LR(.8,.93,.08,.46,"#fff","#B9B2A6") + LR(.8,.93,.54,.92,"#fff","#B9B2A6") + LR(0,.58,0,1,"#9DB39A","#7E9579"));
+    case "sofa": return LR(0,1,0,1,"#D9D2C5","#9C9384") + (wall===0 ? LR(0,1,0,.28,"#C8BFAF","#9C9384") : LR(0,1,.72,1,"#C8BFAF","#9C9384")) + LR(0,.08,0,1,"#C8BFAF","#9C9384") + LR(.92,1,0,1,"#C8BFAF","#9C9384");
+    case "dining": { let s = LR(0,1,0,1,"#B98A5E","#7A5534"); const n = Math.max(1, Math.floor((along?it.w:it.d)/0.6));
+      for(let i=0;i<n;i++){ const a = (i+.2)/n, b = (i+.8)/n; s += LR(a,b,-.42,-.06,"#E8E1D5","#9C9384") + LR(a,b,1.06,1.42,"#E8E1D5","#9C9384"); } return s; }
+    case "table": return LR(-.3,1.3,-.5,1.5,"#E6DCCB","none",'opacity=".8"') + LR(0,1,0,1,"#B98A5E","#7A5534");
+    case "desk": return LR(0,1,0,1,"#C9A47E","#7A5534") + (wall===0 ? LR(.35,.65,1.1,1.7,"#555","#333") : LR(.35,.65,-.7,-.1,"#555","#333"));
+    case "wardrobe": { let s = LR(0,1,0,1,"#D9CBB5","#8A7A64"); const n = Math.max(2, Math.round((along?it.w:it.d)/0.5)); for(let i=1;i<n;i++) s += LR(i/n-.003,i/n+.003,0,1,"#8A7A64","none"); return s; }
+    case "tv": return LR(0,1,0,1,"#5B4A3A","#3A2E24") + (wall===0 ? LR(.12,.88,0,.2,"#111","#111") : LR(.12,.88,.8,1,"#111","#111"));
+    case "counter": return LR(0,1,0,1,"#D8D2C8","#7D776E") + LR(.55,.85,.15,.85,"#2B2B2B","#111") + `<circle cx="${(x+w*(along?.7:.5)).toFixed(1)}" cy="${(y+h*(along?.5:.7)).toFixed(1)}" r="${(Math.min(w,h)*.12).toFixed(1)}" fill="none" stroke="#bbb"/>` + LR(.12,.38,.2,.8,"#C9D3D8","#8A979E");
+    case "bath": return LR(0,1,0,1,"#EEF3F5","#9AA9AF") + (head===0 ? `<ellipse cx="${(x+w*(along?.22:.5)).toFixed(1)}" cy="${(y+h*(along?.5:.22)).toFixed(1)}" rx="${(along?w*.16:w*.3).toFixed(1)}" ry="${(along?h*.3:h*.16).toFixed(1)}" fill="#fff" stroke="#9AA9AF"/>` : `<ellipse cx="${(x+w*(along?.78:.5)).toFixed(1)}" cy="${(y+h*(along?.5:.78)).toFixed(1)}" rx="${(along?w*.16:w*.3).toFixed(1)}" ry="${(along?h*.3:h*.16).toFixed(1)}" fill="#fff" stroke="#9AA9AF"/>`);
+    case "plant": return `<circle cx="${(x+w/2).toFixed(1)}" cy="${(y+h/2).toFixed(1)}" r="${(Math.max(w,h)*.55).toFixed(1)}" fill="#6E9B57" stroke="#4F7F3E"/><circle cx="${(x+w*.4).toFixed(1)}" cy="${(y+h*.4).toFixed(1)}" r="${(Math.max(w,h)*.25).toFixed(1)}" fill="#8DB86B"/>`;
+    case "chair": return LR(0,1,0,1,"#E8E1D5","#9C9384");
+    default: return LR(0,1,0,1,"#DDD6CA","#8A8174");
+  }
+}
+function planSVG(f, opts={}){
+  const {elec=true, furn=true} = opts;
+  const rooms = roomsOf(f), B = bbox(rooms); if(!B) return "";
+  const S = 46, pad = 1.3, W = Math.round((B.x1-B.x0+2*pad)*S), Hh = Math.round((B.y1-B.y0+2*pad)*S + 30);
+  const X = v => ((v-B.x0+pad)*S).toFixed(1), Y = v => ((v-B.y0+pad)*S).toFixed(1);
+  const useFinal = !f.proposed || state.version==="proposed";
+  const lighten = h => { const n = parseInt(h.slice(1),16); const m = c => Math.round(c + (255-c)*0.45); return `rgb(${m(n>>16&255)},${m(n>>8&255)},${m(n&255)})`; };
+  let s = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" font-family="IBM Plex Sans, Arial, sans-serif">
+  <defs><pattern id="pw" width="${S*0.9}" height="9" patternUnits="userSpaceOnUse"><rect width="${S*0.9}" height="9" fill="none"/><path d="M0 8.5H${S*0.9}M${S*0.45} 0V9" stroke="#000" stroke-opacity=".08"/></pattern>
+  <pattern id="pt" width="${S*0.6}" height="${S*0.6}" patternUnits="userSpaceOnUse"><path d="M0 .5H${S*0.6}M.5 0V${S*0.6}" stroke="#000" stroke-opacity=".07"/></pattern>
+  <pattern id="ps" width="${S*0.3}" height="${S*0.3}" patternUnits="userSpaceOnUse"><path d="M0 .5H${S*0.3}M.5 0V${S*0.3}" stroke="#000" stroke-opacity=".1"/></pattern></defs>
+  <rect width="${W}" height="${Hh}" fill="#FFFFFF"/>`;
+  rooms.forEach(r=>{
+    const lk = floorLook(r, finOf(f, r)), pat = {wood:"pw", tile:"pt", small:"ps", paver:"ps", grass:"pt"}[lk.kind];
+    s += `<rect x="${X(r.x)}" y="${Y(r.y)}" width="${(r.w*S).toFixed(1)}" height="${(r.d*S).toFixed(1)}" fill="${lighten(lk.color)}"/><rect x="${X(r.x)}" y="${Y(r.y)}" width="${(r.w*S).toFixed(1)}" height="${(r.d*S).toFixed(1)}" fill="url(#${pat})"/>`;
+  });
+  rooms.forEach(r=>{ s += `<rect x="${X(r.x)}" y="${Y(r.y)}" width="${(r.w*S).toFixed(1)}" height="${(r.d*S).toFixed(1)}" fill="none" stroke="#1D2528" stroke-width="5"/>`; });
+  openingsOf(f).forEach(o=>{
+    const len = o.len*S, x = +X(o.x), y = +Y(o.y), v = o.orient==="v";
+    if(o.type==="window") s += v ? `<rect x="${x-3}" y="${y}" width="6" height="${len}" fill="#fff" stroke="#5E9BC0" stroke-width="1.5"/><line x1="${x}" y1="${y}" x2="${x}" y2="${y+len}" stroke="#5E9BC0"/>` : `<rect x="${x}" y="${y-3}" width="${len}" height="6" fill="#fff" stroke="#5E9BC0" stroke-width="1.5"/><line x1="${x}" y1="${y}" x2="${x+len}" y2="${y}" stroke="#5E9BC0"/>`;
+    else s += v ? `<line x1="${x}" y1="${y}" x2="${x}" y2="${y+len}" stroke="#fff" stroke-width="7"/><path d="M${x} ${y}L${x+len} ${y}A${len} ${len} 0 0 1 ${x} ${y+len}" fill="none" stroke="#A86B12" stroke-width="1"/>` : `<line x1="${x}" y1="${y}" x2="${x+len}" y2="${y}" stroke="#fff" stroke-width="7"/><path d="M${x} ${y}L${x} ${y+len}A${len} ${len} 0 0 0 ${x+len} ${y}" fill="none" stroke="#A86B12" stroke-width="1"/>`;
+  });
+  if(furn && useFinal) (f.furniture||[]).forEach(it=>{ s += furnSVG(it, rooms, X, Y, S); });
+  const el = useFinal && elec ? f.electrical : null;
+  if(el){
+    el.circuits.forEach((c,ci)=>c.runs.forEach(run=>{ s += `<polyline points="${run.map(([a,b])=>`${X(a)},${Y(b)}`).join(" ")}" fill="none" stroke="${CIRCUIT_COLORS[ci%CIRCUIT_COLORS.length]}" stroke-width="2.2" stroke-dasharray="7 4" stroke-linejoin="round" opacity=".9"/>`; }));
+  }
+  rooms.forEach(r=>{
+    const small = r.w*S < 90, cx = +X(r.x + r.w/2), cy = +Y(r.y) + (r.d*S > 70 ? 22 : r.d*S/2 - 3);
+    const t1 = esc(r.name.slice(0,22)), t2 = `${r.w.toFixed(1)} × ${r.d.toFixed(1)} m`, f1 = small?10:12.5, f2 = small?9:10.5;
+    s += `<g text-anchor="middle"><text x="${cx}" y="${cy-2}" font-size="${f1}" font-weight="600" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" opacity=".9">${t1}</text><text x="${cx}" y="${cy-2}" font-size="${f1}" font-weight="600" fill="#1D2528">${t1}</text>`+
+      `<text x="${cx}" y="${cy+12}" font-size="${f2}" fill="none" stroke="#fff" stroke-width="4" stroke-linejoin="round" opacity=".9">${t2}</text><text x="${cx}" y="${cy+12}" font-size="${f2}" fill="#4A565B">${t2}</text></g>`;
+  });
+  if(el){
+    el.points.forEach(p=>{ s += symSVG(p.type, +X(p.x), +Y(p.y)); });
+    if(el.db) s += symSVG("db", +X(el.db.x), +Y(el.db.y));
+  }
+  const by = Hh - 16;
+  s += `<g transform="translate(16 ${by})"><rect width="${S}" height="6" fill="#1D2528"/><rect x="${S}" width="${S}" height="6" fill="#fff" stroke="#1D2528"/><text y="-4" font-size="10" fill="#1D2528">0</text><text x="${S-3}" y="-4" font-size="10" fill="#1D2528">1</text><text x="${2*S-6}" y="-4" font-size="10" fill="#1D2528">2 m</text></g>`;
+  s += `<g transform="translate(${W-28} 30)"><path d="M0 -16L7 6L0 1L-7 6Z" fill="#1D2528"/><text y="20" font-size="11" text-anchor="middle" fill="#1D2528" font-weight="700">N</text></g>`;
+  return s + `</svg>`;
+}
+function svgToCanvas(svg, maxW=2200){
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = ()=>{ const k = maxW/(img.width||maxW), c = document.createElement("canvas"); c.width = Math.round((img.width||maxW)*k); c.height = Math.round((img.height||maxW)*k);
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,c.width,c.height); g.drawImage(img,0,0,c.width,c.height); res(c); };
+    img.onerror = rej; img.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg);
+  });
+}
+function elecCounts(el){
+  const rows = {};
+  el.points.forEach(p=>{ const r = rows[p.room||"Other"] ||= {sb:0, so:0, pw:0, li:0, fa:0, ac:0};
+    if(p.type==="switchboard") r.sb++; else if(p.type==="socket"||p.type==="tv"||p.type==="data") r.so++; else if(["power","geyser","ev"].includes(p.type)) r.pw++;
+    else if(p.type==="light"||p.type==="exhaust") r.li++; else if(p.type==="fan") r.fa++; else if(p.type==="ac") r.ac++; });
+  return rows;
+}
 
 /* ---------------- views ---------------- */
 let currentView = "home";
@@ -996,6 +1429,7 @@ function syncSegs(){
   document.querySelectorAll("[data-fc]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.fc===state.facade));
   document.querySelectorAll("[data-lt]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.lt===state.light));
   document.querySelectorAll("[data-tog=explode]").forEach(b=>b.setAttribute("aria-pressed", state.explode));
+  document.querySelectorAll("[data-layer]").forEach(b=>b.setAttribute("aria-pressed", !!state.layers[b.dataset.layer]));
   document.querySelectorAll("[data-tog=tour]").forEach(b=>b.setAttribute("aria-pressed", state.touring));
   document.querySelectorAll("#segView button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===state.view));
   document.querySelectorAll("#segFloor button").forEach(b=>b.setAttribute("aria-pressed", b.dataset.fl===state.floorSel));
@@ -1016,6 +1450,7 @@ function renderTab(){
     body.innerHTML = `<p>${esc(p.summary || "")}</p>`+
       (p.cost?.high ? `<div class="cost"><span class="label">Rough cost estimate</span><span class="big">${fmtLakh(p.cost.low)} – ${fmtLakh(p.cost.high)}</span><span class="muted" style="font-size:13.5px">${esc(p.cost.basis||"")} Get local contractor quotes before deciding.</span></div>`:"")+
       (ch.length ? `<div class="stack"><h3>What the proposal changes</h3>${ch.map(f=>`<div class="stack" style="gap:4px"><span class="label">${esc(f.label)}</span><ul class="changes">${f.proposed.changes.map(c=>`<li>${esc(c)}</li>`).join("")}</ul></div>`).join("")}</div>`:"")+
+      (sortedFloors().some(f=>f.services) ? `<div class="stack"><h3>Your design team</h3><ul class="team">${sortedFloors().map((f,i)=>`<li><span class="ag-n">${i+1}</span><div class="stack" style="gap:4px"><b>Agent ${i+1} · ${esc(f.label)}</b><div class="mini-chips">${(f.services||[]).map(x=>`<span>${esc(svcLabel(x))}</span>`).join("")}</div>${f.summary?`<p class="muted" style="font-size:14px">${esc(f.summary)}</p>`:""}</div></li>`).join("")}</ul></div>` : "")+
       (thumbs ? `<div class="stack"><h3>Your drawings</h3><div class="thumbs">${thumbs}</div></div>`:"")+
       (p.notes ? `<p class="muted" style="font-size:13.5px">${esc(p.notes)}</p>`:"")+
       `<p class="muted" style="font-size:12.5px">AI-generated concept. Have a licensed architect and structural engineer check it before building.</p>`;
@@ -1033,6 +1468,33 @@ function renderTab(){
       li.onclick = pick; li.onkeydown = e=>{ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); pick(); } };
     });
     highlight();
+  } else if(t==="electrical"){
+    const fl = sortedFloors().filter(f=>f.electrical);
+    if(!fl.length){ body.innerHTML = `<p class="muted">No floor has a switch and wiring plan yet. Start a new design and tick <b>Switches &amp; wiring</b> on the pages you want wired.</p>`; return; }
+    if(!fl.find(f=>f.key===state.elecFloor)) state.elecFloor = fl[0].key;
+    const f = fl.find(x=>x.key===state.elecFloor), el = f.electrical, useFinal = !f.proposed || state.version==="proposed";
+    const counts = elecCounts(el), used = [...new Set([...el.points.map(p=>p.type), ...(el.db?["db"]:[])])];
+    body.innerHTML = `<div class="row between"><div class="seg" role="group" aria-label="Floor">${fl.map(x=>`<button data-ef="${esc(x.key)}" aria-pressed="${x.key===f.key}">${esc(x.label)}</button>`).join("")}</div>
+        <button class="tog" id="elec3d" aria-pressed="${state.layers.electrical}">Show wiring in 3D</button></div>
+      ${useFinal ? "" : `<p class="status err">This wiring is drawn on the proposed layout. Switch Layout to Proposed to see it.</p>`}
+      <div class="plan-sheet">${planSVG(f, {furn:false})}</div>
+      <div class="legend">${used.map(t=>`<span><svg width="30" height="22" viewBox="-15 -11 30 22" aria-hidden="true">${symSVG(t,0,0)}</svg>${SYM[t]||t}</span>`).join("")}</div>
+      <div class="stack" style="gap:6px"><h3>Points per room</h3><div class="tbl"><table class="mat num"><thead><tr><th>Room</th><th>Boards</th><th>Sockets</th><th>Power</th><th>Lights</th><th>Fans</th><th>AC</th></tr></thead><tbody>${Object.entries(counts).map(([r,c])=>`<tr><td>${esc(r)}</td><td>${c.sb}</td><td>${c.so}</td><td>${c.pw}</td><td>${c.li}</td><td>${c.fa}</td><td>${c.ac}</td></tr>`).join("")}</tbody></table></div></div>
+      <div class="stack" style="gap:6px"><h3>Circuits from the DB</h3><div class="tbl"><table class="mat"><thead><tr><th>Circuit</th><th>MCB</th><th>Wire</th><th>Serves</th></tr></thead><tbody>${el.circuits.map((c,i)=>`<tr><td><i class="wire" style="background:${CIRCUIT_COLORS[i%CIRCUIT_COLORS.length]}"></i>${esc(c.name)}</td><td>${esc(c.mcb)}</td><td>${esc(c.wire)}</td><td class="muted">${esc(c.rooms.join(", "))}</td></tr>`).join("")}</tbody></table></div></div>
+      ${el.notes.length ? `<div class="stack" style="gap:4px"><h3>Installation notes</h3><ul class="changes">${el.notes.map(n=>`<li>${esc(n)}</li>`).join("")}</ul></div>` : ""}
+      <p class="muted" style="font-size:12.5px">Have a licensed electrician confirm loads, wire sizes and earthing before work starts.</p>`;
+    body.querySelectorAll("[data-ef]").forEach(b=>b.onclick=()=>{ state.elecFloor = b.dataset.ef; renderTab(); });
+    $("elec3d").onclick = ()=>{ state.layers.electrical = !state.layers.electrical;
+      if(state.layers.electrical){ state.view = "cutaway"; state.floorSel = f.key; } syncSegs(); build(true); renderTab(); };
+  } else if(t==="interior"){
+    const fl = sortedFloors().filter(f=>f.finishes?.length || f.furniture?.length || f.parking);
+    if(!fl.length){ body.innerHTML = `<p class="muted">No floor has interior, flooring or parking work yet. Start a new design and tick those tasks on the pages you want designed.</p>`; return; }
+    const row = (k, v, h) => v ? `<dt>${k}</dt><dd>${h ? `<i class="chipc" style="background:${h}"></i>` : ""}${esc(v)}</dd>` : "";
+    body.innerHTML = fl.slice().reverse().map(f=>`<div class="stack"><div class="row between"><h3>${esc(f.label)}</h3><span class="label">${(f.services||[]).filter(x=>["interior","flooring","parking"].includes(x)).map(svcLabel).join(" · ")}</span></div>
+      ${f.furniture?.length ? `<div class="plan-sheet">${planSVG(f, {elec:false})}</div>` : ""}
+      ${f.finishes?.length ? `<div class="fin-grid">${f.finishes.map(x=>`<div class="fin"><h4>${esc(x.room)}</h4><dl>${row("Floor", x.flooring, x.floorHex)}${row("Walls", x.walls, x.wallHex)}${row("Ceiling", x.ceiling)}${row("Skirting", x.skirting)}${row("Lighting", x.lighting)}${row("Furniture", x.furniture)}</dl></div>`).join("")}</div>` : ""}
+      ${f.parking ? `<div class="cost"><span class="label">Parking</span><h3>${esc(f.parking.style)}</h3><p class="muted" style="font-size:14px">${f.parking.cars ? `${f.parking.cars} car${f.parking.cars>1?"s":""} · ` : ""}${esc(f.parking.surface)}. ${esc(f.parking.detail)}</p>${f.parking.features.length ? `<div class="mini-chips">${f.parking.features.map(x=>`<span>${esc(x)}</span>`).join("")}</div>` : ""}</div>` : ""}
+    </div>`).join("");
   } else if(t==="suggestions"){
     const s = p.suggestions||[];
     body.innerHTML = s.length ? s.map(x=>`<div class="sug ${esc(x.priority)}"><span class="pill">${esc(x.category)} · ${esc(x.priority)} priority</span><h3>${esc(x.title)}</h3><p>${esc(x.detail)}</p></div>`).join("") : `<p class="muted">No suggestions yet.</p>`;
@@ -1048,7 +1510,10 @@ function renderTab(){
   }
 }
 document.querySelectorAll("#tabs button").forEach(b=>b.onclick=()=>{ state.tab = b.dataset.t; renderTab(); });
-document.querySelectorAll("#segView button").forEach(b=>b.onclick=()=>{ state.view = b.dataset.v; syncSegs(); build(); });
+document.querySelectorAll("#segView button").forEach(b=>b.onclick=()=>{ state.view = b.dataset.v; syncSegs(); build(); if(state.view==="dollhouse") flyTo("high"); });
+document.querySelectorAll("[data-layer]").forEach(b=>b.onclick=()=>{ const k = b.dataset.layer; state.layers[k] = !state.layers[k];
+  if(k==="electrical" && state.layers.electrical && state.view==="exterior") state.view = "cutaway";
+  syncSegs(); build(true); if(state.tab==="electrical") renderTab(); });
 document.querySelectorAll("#segVer button").forEach(b=>b.onclick=()=>{ state.version = b.dataset.ver; state.selected = null; syncSegs(); build(true); renderStats(); renderTab(); });
 document.querySelectorAll("[data-fc]").forEach(b=>b.onclick=()=>{ if(state.facade===b.dataset.fc) return; state.facade = b.dataset.fc; syncSegs(); build(true); flyTo("iso"); });
 document.querySelectorAll("[data-lt]").forEach(b=>b.onclick=()=>{ state.light = b.dataset.lt; syncSegs(); applyLight(true); });
@@ -1062,31 +1527,95 @@ document.querySelectorAll(".fcard").forEach(c=>c.addEventListener("click", ()=>{
 
 function openResults(){
   state.floorSel="all"; state.view="exterior"; state.selected=null; state.tab="overview";
-  if(!state.plan.example) state.facade = /tradition|heritage|classic|colonial/i.test(state.plan.design?.style||"") ? "classic" : "modern";
+  if(!state.plan.example) state.facade = state.plan.facade || (/tradition|heritage|classic|colonial/i.test(state.plan.design?.style||"") ? "classic" : "modern");
+  state.layers.electrical = false; state.elecFloor = null;
   show("results"); renderResults();
   const p = presetPos("iso").pos; flyTo("iso", p.clone().multiplyScalar(2.2).setY(p.y*2.6));
 }
 
 /* ---------------- wizard ---------------- */
+const SERVICES = [
+  {key:"layout", label:"3D model", fixed:true},
+  {key:"redesign", label:"Improve layout"},
+  {key:"interior", label:"Interior & furniture"},
+  {key:"flooring", label:"Flooring & finishes"},
+  {key:"electrical", label:"Switches & wiring"},
+  {key:"parking", label:"Parking style"}
+];
+const svcLabel = k => (SERVICES.find(s=>s.key===k)||{}).label || k;
+const MAX_PAGES = 6;
 let nextId = 1;
-function renderDrawings(){
-  $("drawings").innerHTML = state.drawings.map(d=>`<div class="dw"><img src="${d.url}" alt="Uploaded drawing ${esc(d.file.name)}">
-    <div class="meta"><span class="name">${esc(d.file.name)}</span>
-    <label class="label" for="fl${d.id}">Which floor is this?</label>
-    <select id="fl${d.id}" data-id="${d.id}">${FLOOR_OPTS.map(o=>`<option value="${o.key}" ${o.key===d.floor?"selected":""}>${o.label}</option>`).join("")}</select>
-    <button data-rm="${d.id}">Remove</button></div></div>`).join("");
-  $("drawings").querySelectorAll("select").forEach(s=>s.onchange=()=>{ state.drawings.find(d=>d.id==s.dataset.id).floor = s.value; });
-  $("drawings").querySelectorAll("[data-rm]").forEach(b=>b.onclick=()=>{ const i = state.drawings.findIndex(d=>d.id==b.dataset.rm); URL.revokeObjectURL(state.drawings[i].url); state.drawings.splice(i,1); renderDrawings(); });
-  $("drop").hidden = state.drawings.length >= 4;
+function defaultServices(floor){ const s = ["layout","redesign","interior"]; if(floor==="ground") s.push("parking"); return s; }
+function nextFloor(){ const used = state.drawings.map(d=>d.floor); return ["ground","first","second","third","top","basement"].find(k=>!used.includes(k)) || "ground"; }
+function addDrawing(blob, name){
+  const floor = nextFloor();
+  state.drawings.push({id:nextId++, file:blob, name, url:URL.createObjectURL(blob), floor, services:defaultServices(floor), notes:""});
 }
-function addFiles(list){
-  const s1 = $("s1status"); s1.textContent = ""; s1.classList.remove("err");
-  for(const f of list){
-    if(state.drawings.length >= 4){ s1.textContent = "You can add up to 4 floors."; s1.classList.add("err"); break; }
-    if(!/^image\//.test(f.type)){ s1.textContent = `${f.name} isn't an image. Use JPG, PNG or WebP; for a PDF, screenshot the plan page.`; s1.classList.add("err"); continue; }
-    const used = state.drawings.map(d=>d.floor);
-    const floor = ["ground","first","second","third","top","basement"].find(k=>!used.includes(k)) || "ground";
-    state.drawings.push({id:nextId++, file:f, url:URL.createObjectURL(f), floor});
+function renderDrawings(){
+  $("drawings").innerHTML = state.drawings.map((d,i)=>`<div class="pg" data-id="${d.id}">
+    <div class="pg-img"><img src="${d.url}" alt="${esc(d.name)}"><span class="agent-tag">Agent ${i+1}</span></div>
+    <div class="pg-body">
+      <span class="name">${esc(d.name)}</span>
+      <div class="field"><label class="label" for="fl${d.id}">Which floor is this?</label>
+        <select id="fl${d.id}">${FLOOR_OPTS.map(o=>`<option value="${o.key}" ${o.key===d.floor?"selected":""}>${o.label}</option>`).join("")}</select></div>
+      <div class="field"><span class="label">What should this agent do?</span>
+        <div class="chips">${SERVICES.map(s=>`<label class="chip"><input type="checkbox" value="${s.key}" ${d.services.includes(s.key)?"checked":""} ${s.fixed?"disabled":""}><span>${s.label}</span></label>`).join("")}</div></div>
+      <div class="field"><label class="label" for="nt${d.id}">What do you want on this floor?</label>
+        <textarea id="nt${d.id}" rows="2" placeholder="e.g. modular kitchen, geyser switch outside the bath, Italian marble in the living room, covered parking for 2 cars">${esc(d.notes)}</textarea></div>
+      <div><button data-rm="${d.id}">Remove page</button></div>
+    </div></div>`).join("");
+  $("drawings").querySelectorAll(".pg").forEach(el=>{
+    const d = state.drawings.find(x=>x.id==el.dataset.id);
+    el.querySelector("select").onchange = e=>{ d.floor = e.target.value; };
+    el.querySelectorAll(".chips input").forEach(c=>c.onchange=()=>{ d.services = ["layout", ...[...el.querySelectorAll(".chips input:checked")].map(x=>x.value).filter(v=>v!=="layout")]; });
+    el.querySelector("textarea").oninput = e=>{ d.notes = e.target.value; };
+    el.querySelector("[data-rm]").onclick = ()=>{ const i = state.drawings.indexOf(d); URL.revokeObjectURL(d.url); state.drawings.splice(i,1); renderDrawings(); };
+  });
+  $("drop").hidden = state.drawings.length >= MAX_PAGES;
+  const n = state.drawings.length;
+  $("pageCount").textContent = n ? `${n} page${n>1?"s":""} · ${n} agent${n>1?"s":""} will work in parallel` : "";
+}
+
+let pdfjsReady = null;
+function loadScript(src){ return new Promise((res,rej)=>{ const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = ()=>rej(new Error("load")); document.head.appendChild(s); }); }
+function loadPdfJs(){
+  if(!pdfjsReady) pdfjsReady = (async ()=>{
+    const base = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/";
+    await loadScript(base + "pdf.min.js");
+    await loadScript(base + "pdf.worker.min.js");   // PDF engine runs on the page itself
+    if(!window.pdfjsLib) throw new Error("pdfjs");
+    return window.pdfjsLib;
+  })().catch(e=>{ pdfjsReady = null; throw e; });
+  return pdfjsReady;
+}
+async function addPdf(file, msg){
+  const lib = await loadPdfJs();
+  const doc = await lib.getDocument({data: new Uint8Array(await file.arrayBuffer())}).promise;
+  const room = MAX_PAGES - state.drawings.length, n = Math.min(doc.numPages, room);
+  for(let i=1;i<=n;i++){
+    msg(`Reading ${file.name}: page ${i} of ${n}…`);
+    const page = await doc.getPage(i);
+    const v1 = page.getViewport({scale:1}), vp = page.getViewport({scale: 1800/Math.max(v1.width, v1.height)});
+    const c = document.createElement("canvas"); c.width = Math.round(vp.width); c.height = Math.round(vp.height);
+    const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0,0,c.width,c.height);
+    await page.render({canvasContext:g, viewport:vp}).promise;
+    addDrawing(await canvasBlob(c, "image/jpeg", 0.9), `${file.name} · page ${i}`);
+    renderDrawings();
+  }
+  return doc.numPages > n ? `Added the first ${n} of ${doc.numPages} pages. You can have up to ${MAX_PAGES} pages per design.` : "";
+}
+async function addFiles(list){
+  const s1 = $("s1status"); const msg = (t, err)=>{ s1.textContent = t; s1.classList.toggle("err", !!err); };
+  msg("");
+  for(const f of [...list]){
+    if(state.drawings.length >= MAX_PAGES){ msg(`You can add up to ${MAX_PAGES} pages per design.`, true); break; }
+    if(f.type==="application/pdf" || /\.pdf$/i.test(f.name)){
+      try{ const note = await addPdf(f, msg); msg(note); }
+      catch(e){ msg(`Couldn't read ${f.name}. Try again, or export its pages as images.`, true); }
+      continue;
+    }
+    if(!/^image\//.test(f.type)){ msg(`${f.name} isn't an image or PDF.`, true); continue; }
+    addDrawing(f, f.name);
   }
   renderDrawings();
 }
@@ -1105,73 +1634,158 @@ $("brand").onclick = ()=>{ show("home"); controls.autoRotate = !RM; };
 $("cancelWiz").onclick = ()=>show(state.plan.example ? "home" : "results");
 $("toStep2").onclick = ()=>{
   const s1 = $("s1status"); s1.classList.add("err");
-  if(!state.drawings.length){ s1.textContent = "Add at least one drawing to continue."; return; }
+  if(!state.drawings.length){ s1.textContent = "Add at least one drawing or PDF to continue."; return; }
   const keys = state.drawings.map(d=>d.floor), dup = keys.find((k,i)=>keys.indexOf(k)!==i);
-  if(dup){ s1.textContent = `Two drawings are marked ${floorLabel(dup)}. Give each drawing a different floor.`; return; }
+  if(dup){ s1.textContent = `Two pages are marked ${floorLabel(dup)}. Give each page a different floor.`; return; }
   s1.textContent = ""; s1.classList.remove("err"); step(2);
 };
 $("back1").onclick = ()=>step(1);
 $("editWishes").onclick = ()=>{ if(!state.drawings.length){ startWizard(); return; } show("wizard"); step(2); };
 
-/* ---------------- AI ---------------- */
-const SCHEMA = `{"title":"short name, e.g. G+1 3BHK house","summary":"2-3 sentences about the house and the proposal",
-"floors":[{"label":"Ground floor","rooms":[{"name":"Living room","type":"living|dining|kitchen|bedroom|bath|balcony|terrace|corridor|stair|utility|parking|garden|pooja|study|other","x":0,"y":0,"w":4.5,"d":3.6}],
-"openings":[{"type":"door|window","x":0,"y":1.2,"len":0.9,"orient":"h|v"}],
-"proposed":{"rooms":[same shape as rooms],"openings":[same shape as openings],"changes":["plain-language change"]}}],
-"suggestions":[{"category":"Layout|Light & ventilation|Storage|Accessibility|Structure|Cost|Vastu|Sustainability","priority":"high|medium|low","title":"short headline","detail":"1-2 sentences"}],
-"design":{"style":"name","palette":[{"name":"Lime white","hex":"#F1ECE2","use":"Walls"}],"materials":[{"area":"Flooring","material":"...","why":"..."}],"facade":"1-2 sentences"},
-"plan":[{"title":"phase name","detail":"1-2 sentences","duration":"e.g. 2-3 weeks"}],
-"cost":{"low":4600000,"high":6500000,"basis":"per-sq-ft rate and area used"},
-"notes":"one sentence on assumptions, e.g. which dimensions were estimated"}`;
+/* ---------------- AI agents ---------------- */
+const PLAYBOOK = `Design playbook (follow it):
+- Plan like a senior Indian residential architect. Zone each floor: public spaces (living, dining) near the entrance, private bedrooms away from it, service spaces (kitchen, utility, baths) grouped so plumbing stacks between floors.
+- Typical minimums (NBC 2016 guidance): main habitable room 9.5 m2 and 2.4 m wide, other bedrooms 7.5 m2 and 2.1 m wide, kitchen 5 m2 and 1.8 m wide, bathroom 1.8 m2 and 1.2 m wide, WC 1.1 m2, corridors 1.0 m, stairs 1.0 m wide with risers up to 19 cm and treads at least 25 cm.
+- Doors: main 1.0-1.2 m, rooms 0.9 m, baths 0.75 m. Windows at least 1/6 of each habitable room's floor area; aim for cross-ventilation; keep the kitchen on an outside wall.
+- Keep walls straight and aligned, avoid leftover slivers, keep the staircase in the same place on every floor, and keep structural columns on a regular grid.`;
+const ELEC_GUIDE = `Electrical guide:
+- A switchboard inside each room on the latch side of the door at 1.2 m. Two-way switches at the top and bottom of stairs and at the master bed side.
+- 6A sockets at 0.3 m in living rooms and bedrooms (one per wall, extra at the TV wall and both bed sides); 1.1 m above kitchen counters. A dedicated 16A power socket for each AC (2.2 m), geyser (1.8 m), fridge, microwave, washing machine, water purifier and EV charger.
+- A ceiling light at each room centre (two or more over 15 m2), a fan in living rooms and bedrooms, an exhaust in kitchens and baths.
+- Main distribution board (DB) near the main entrance at about 1.8 m, with a 30 mA RCCB.
+- Separate circuits: lighting and fans (1.5 sq mm FR copper, 6-10A MCB), sockets (2.5 sq mm, 16A MCB), each AC, geyser or EV charger (4-6 sq mm, 20-32A MCB). Conduits run concealed along the ceiling slab, then drop down walls to the boards.`;
+const INTERIOR_GUIDE = `Interior guide: keep 0.75-0.9 m walking clearance around furniture; beds on a solid wall away from the door swing; sofa facing the TV wall; dining next to the kitchen; wardrobes 0.6 m deep; kitchen counters 0.6 m deep in an L or parallel layout following the work triangle. Pick every material and colour to match the chosen style and budget, with real hex colours.`;
 
-function buildPrompt(){
-  const chk = id => [...document.querySelectorAll(`#${id} input:checked`)].map(i=>i.value);
-  const imgs = state.drawings.map((d,i)=>`Image ${i+1} = ${floorLabel(d.floor)}`).join("; ");
-  const wishes = [
+function chk(id){ return [...document.querySelectorAll(`#${id} input:checked`)].map(i=>i.value); }
+function wishesText(){
+  return [
     ["Project", $("pGoal").value], ["Main entrance faces", $("pFacing").value || "not sure"], ["People living here", $("pFamily").value || "not specified"],
     ["City or climate", $("pCity").value || "not specified"], ["Style", $("pStyle").value], ["Budget level", $("pBudget").value],
     ["Household needs", chk("needs").join(", ") || "none given"], ["Priorities", chk("prios").join(", ") || "none given"],
-    ["Owner's notes", $("pNotes").value.trim().slice(0,1500) || "none"]
+    ["Owner's notes for the whole house", $("pNotes").value.trim().slice(0,1500) || "none"]
   ].map(([k,v])=>`- ${k}: ${v}`).join("\n");
-  const vastu = $("vastuChip").checked;
-  return `You are an experienced Indian residential architect and interior designer.
-I am attaching ${state.drawings.length} drawing(s) of ONE house: ${imgs}.
-
-A) For each image, reconstruct that floor's layout as axis-aligned rectangles in METERS. Use ONE shared origin for all floors: (0,0) is the top-left outer corner of the building, x grows right, y grows down, so the floors stack correctly. Use printed dimensions when present (convert feet/inches). Otherwise estimate from typical sizes (door about 0.9 m, bed about 2 m). Rooms tile the floor without big overlaps. Mark staircases with type "stair" and keep them in the same place on every floor. Doors and windows are segments on walls: x,y = start point, len in meters, orient "h" (along x) or "v" (along y).
-B) Using the owner's wishes below, propose an improved layout for each floor in "proposed". Keep the outer footprint and structure; rearrange or rename interior rooms to meet the wishes. List each change in plain words. If a floor needs no change, copy its rooms and give an empty changes list.
-C) Give 6 to 10 specific suggestions for this house${vastu ? " (include 2 to 3 Vastu Shastra suggestions with category \"Vastu\"; assume the top of the drawing is north unless a north arrow shows otherwise)" : ""}, a design direction in the chosen style (5 or 6 colour palette with hex codes, 4 to 6 materials, a facade idea), a 5 to 7 phase build or renovation plan with durations, and a rough cost range in Indian rupees for the proposed work at this budget level, stating the per-sq-ft basis.
-
-Owner's wishes:
-${wishes}
-
-Reply with ONLY JSON in this shape, floors in the same order as the images, text kept short:
-${SCHEMA}
-If an image is not a floor plan, sketch or map, still return the JSON with an empty rooms list for it and explain in notes.`;
 }
 
+function floorPrompt(d){
+  const has = k => d.services.includes(k);
+  const others = state.drawings.filter(x=>x!==d).map(x=>floorLabel(x.floor)).join(", ") || "none";
+  const tasks = [
+    `Read the drawing and rebuild this floor as axis-aligned rectangles in METERS. Origin (0,0) is the top-left outer corner of the building, x grows right, y grows down. Use printed dimensions when present (convert feet and inches); otherwise estimate from typical sizes (door 0.9 m, bed 2 m). Rooms tile the floor without big gaps or overlaps. Mark staircases with type "stair". Doors and windows are segments on walls: x,y is the start point, len in meters, orient "h" (along x) or "v" (along y).`,
+    has("redesign") ? `Propose an improved layout in "proposed", following the playbook and the owner's wishes. Keep the outer footprint, the staircase and structural walls. List each change in plain words.` : `Do not redesign this floor: set "proposed" to null.`
+  ];
+  if(has("interior")) tasks.push(`Interior design: for each room describe the look in "finishes" (lighting, furniture list) and place the main furniture pieces as rectangles in "furniture".`);
+  if(has("flooring")) tasks.push(`Flooring and finishes: for each room in "finishes" give the flooring (material and tile size), floor colour hex, wall finish and colour hex, ceiling and skirting.`);
+  if(has("electrical")) tasks.push(`Electrical: place every switchboard, socket, power socket, light, fan, AC, geyser, exhaust and the DB as points in "electrical", then group them into circuits with MCB rating, wire size and conduit runs drawn as polylines from the DB.`);
+  if(has("parking")) tasks.push(`Parking: propose the parking style for this floor (covered carport, pergola, stilt, open) with number of cars, surface and features in "parking".`);
+  tasks.push(`Give 3 to 6 specific suggestions for this floor.`);
+  const final = has("redesign") ? `the proposed layout` : `the layout as drawn`;
+  const parts = [
+    `"summary":"2 sentences about this floor"`,
+    `"rooms":[{"name":"Living room","type":"living|dining|kitchen|bedroom|bath|balcony|terrace|corridor|stair|utility|parking|garden|pooja|study|other","x":0,"y":0,"w":4.5,"d":3.6}]`,
+    `"openings":[{"type":"door|window","x":0,"y":1.2,"len":0.9,"orient":"h|v"}]`,
+    has("redesign") ? `"proposed":{"rooms":[same shape as rooms],"openings":[same shape as openings],"changes":["plain-language change"]}` : `"proposed":null`
+  ];
+  if(has("interior") || has("flooring")) parts.push(`"finishes":[{"room":"Living room","flooring":"Marble-look vitrified tile 800x1600","floorHex":"#E6DFD3","walls":"Matte emulsion with teak slat accent","wallHex":"#F1ECE2","ceiling":"Gypsum cove with warm LED strip","skirting":"100 mm matching tile","lighting":"3000K warm downlights","furniture":"L-sofa, TV unit, rug"}]`);
+  if(has("interior")) parts.push(`"furniture":[{"type":"bed|sofa|dining|table|desk|wardrobe|tv|counter|bath|plant|chair|other","name":"Queen bed","x":1.4,"y":9.9,"w":1.6,"d":2.0}]`);
+  if(has("electrical")) parts.push(`"electrical":{"db":{"x":4.3,"y":0.3},"points":[{"type":"switchboard|socket|power|light|fan|ac|geyser|exhaust|tv|data|bell|ev","room":"Living room","x":6.4,"y":0.15,"h":1.2,"note":"6-module, 2-way"}],"circuits":[{"name":"Lighting C1","mcb":"6A","wire":"1.5 sq mm FR copper","rooms":["Living room"],"runs":[[[4.3,0.3],[6.0,1.5]]]}],"notes":["installation note"]}`);
+  if(has("parking")) parts.push(`"parking":{"style":"Covered carport with timber pergola","cars":2,"canopy":true,"surface":"Interlocking pavers","features":["EV charger point"],"detail":"1-2 sentences"}`);
+  parts.push(`"suggestions":[{"category":"Layout|Light & ventilation|Storage|Accessibility|Electrical|Interior|Flooring|Parking|Vastu|Cost","priority":"high|medium|low","title":"short headline","detail":"1-2 sentences"}]`);
+  const vastu = $("vastuChip").checked;
+  return `You are a specialist design agent on a team designing ONE house. Your job is ONLY the attached drawing, which is the ${floorLabel(d.floor)}. Other agents handle: ${others}.
+
+Your tasks:
+${tasks.map((t,i)=>`${i+1}. ${t}`).join("\n")}
+Furniture and electrical coordinates use the same origin and are placed on ${final}.${vastu ? ` Follow Vastu Shastra where practical (assume the top of the drawing is north unless a north arrow shows otherwise) and add Vastu suggestions.` : ""}
+
+${PLAYBOOK}
+${has("electrical") ? "\n"+ELEC_GUIDE+"\n" : ""}${has("interior")||has("flooring") ? "\n"+INTERIOR_GUIDE+"\n" : ""}
+Owner's wishes for the whole house:
+${wishesText()}
+Owner's wishes for THIS floor: ${d.notes.trim().slice(0,1200) || "none given"}
+
+Limits: up to 40 rooms, 100 electrical points, 10 circuits, 60 furniture pieces; each run up to 12 points. Keep text short.
+Reply with ONLY JSON in this shape:
+{${parts.join(",\n")}}
+If the page is not a floor plan, sketch or site map, return {"rooms":[],"summary":"explain what the page shows"}.`;
+}
+
+function leadPrompt(floors){
+  const brief = floors.map(f=>({floor:f.label, tasks:f.services.map(svcLabel), summary:f.summary,
+    rooms:roomsOf(f).map(r=>`${r.name} ${r.w.toFixed(1)}x${r.d.toFixed(1)} m`), changes:f.proposed?.changes||[],
+    parking:f.parking ? f.parking.style : undefined, electrical_points:f.electrical ? f.electrical.points.length : undefined}));
+  const vastu = $("vastuChip").checked;
+  return `You are the lead architect. ${floors.length} specialist agents each designed one floor of the same house. Combine their work into a whole-home design.
+
+Owner's wishes:
+${wishesText()}
+
+Floor results:
+${JSON.stringify(brief)}
+
+${PLAYBOOK}
+
+Return ONLY JSON:
+{"title":"short name, e.g. G+2 4BHK villa","summary":"2-3 sentences about the whole house and the proposal",
+"facade":"modern|classic|minimal (the front style that best fits the wishes)",
+"suggestions":[{"category":"Coordination|Structure|Plumbing|Electrical|Layout|Light & ventilation|Sustainability|Vastu|Cost","priority":"high|medium|low","title":"short headline","detail":"1-2 sentences"}],
+"design":{"style":"name","palette":[{"name":"Lime white","hex":"#F1ECE2","use":"Walls"}],"materials":[{"area":"Flooring","material":"...","why":"..."}],"facade":"1-2 sentences describing the front elevation"},
+"plan":[{"title":"phase name","detail":"1-2 sentences","duration":"e.g. 2-3 weeks"}],
+"cost":{"low":4600000,"high":6500000,"basis":"per-sq-ft rate and area used"},
+"notes":"one sentence on assumptions"}
+Give 5-8 whole-home suggestions focused on how the floors work together (stair alignment, stacked wet areas, electrical riser, structure)${vastu?", including Vastu":""}; a 5-6 colour palette; 4-6 materials; a 5-7 phase plan; a rough cost range in Indian rupees for the work at this budget level.`;
+}
+
+/* ---- cleaning ---- */
 function num(v){ return Number.isFinite(+v) ? +v : 0; }
-function cleanRooms(a){ return (Array.isArray(a)?a:[]).map(r=>({name:String(r?.name||r?.type||"Room").slice(0,40), type:String(r?.type||"other").toLowerCase(), x:num(r?.x), y:num(r?.y), w:Math.max(.3,num(r?.w)), d:Math.max(.3,num(r?.d))})).slice(0,60); }
-function cleanOpen(a){ return (Array.isArray(a)?a:[]).map(o=>({type:o?.type==="window"?"window":"door", x:num(o?.x), y:num(o?.y), len:Math.max(.3,num(o?.len)||.9), orient:o?.orient==="v"?"v":"h"})).slice(0,150); }
-function clean(p){
-  const keys = state.drawings.map(d=>d.floor), lv = levelsFor(keys);
-  const floors = (Array.isArray(p?.floors)?p.floors:[]).slice(0, keys.length).map((f,i)=>{
-    const prop = f?.proposed ? {rooms:cleanRooms(f.proposed.rooms), openings:cleanOpen(f.proposed.openings), changes:(Array.isArray(f.proposed.changes)?f.proposed.changes:[]).map(String).slice(0,10)} : null;
-    return {key:keys[i], label:floorLabel(keys[i]), level:lv[i], rooms:cleanRooms(f?.rooms), openings:cleanOpen(f?.openings), proposed: prop && prop.rooms.length ? prop : null};
-  }).filter(f=>f.rooms.length);
-  const d = p?.design || {};
+const arr = a => Array.isArray(a) ? a : [];
+const str = (v, n=200) => String(v ?? "").slice(0, n);
+const clamp = (v,a,b) => Math.min(b, Math.max(a, v));
+const isHex = h => /^#[0-9a-f]{6}$/i.test(h||"");
+function cleanRooms(a){ return arr(a).map(r=>({name:str(r?.name||r?.type||"Room",40), type:String(r?.type||"other").toLowerCase(), x:num(r?.x), y:num(r?.y), w:Math.max(.3,num(r?.w)), d:Math.max(.3,num(r?.d))})).slice(0,60); }
+function cleanOpen(a){ return arr(a).map(o=>({type:o?.type==="window"?"window":"door", x:num(o?.x), y:num(o?.y), len:Math.max(.3,num(o?.len)||.9), orient:o?.orient==="v"?"v":"h"})).slice(0,150); }
+function cleanSugs(a){ return arr(a).map(s=>({category:str(s?.category||"General",40), priority:["high","medium","low"].includes(s?.priority)?s.priority:"medium", title:str(s?.title,140), detail:str(s?.detail,400)})).filter(s=>s.title).slice(0,14); }
+function cleanFinishes(a){ return arr(a).map(x=>({room:str(x?.room,40), flooring:str(x?.flooring,120), floorHex:isHex(x?.floorHex)?x.floorHex:"", walls:str(x?.walls,120), wallHex:isHex(x?.wallHex)?x.wallHex:"", ceiling:str(x?.ceiling,120), skirting:str(x?.skirting,80), lighting:str(x?.lighting,120), furniture:str(x?.furniture,200)})).filter(x=>x.room).slice(0,30); }
+const FURN = ["bed","sofa","dining","table","desk","wardrobe","tv","counter","bath","plant","chair","other"];
+function cleanFurn(a){ return arr(a).map(x=>{ const t = String(x?.type||"").toLowerCase(); return {type:FURN.includes(t)?t:"other", name:str(x?.name||t,40), x:num(x?.x), y:num(x?.y), w:clamp(num(x?.w),0.2,6), d:clamp(num(x?.d),0.2,6)}; }).slice(0,80); }
+const PT = ["switchboard","socket","power","light","fan","ac","geyser","exhaust","tv","data","bell","ev","db"];
+function cleanElec(e){
+  if(!e || typeof e!=="object") return null;
+  const points = arr(e.points).map(p=>{ const t = String(p?.type||"").toLowerCase(); return {type:PT.includes(t)?t:"socket", room:str(p?.room,40), x:num(p?.x), y:num(p?.y), h:clamp(num(p?.h),0,3), note:str(p?.note,80)}; }).slice(0,140);
+  const circuits = arr(e.circuits).map(c=>{
+    const runs = (arr(c?.runs).length ? arr(c.runs) : (Array.isArray(c?.path) ? [c.path] : []))
+      .map(r=>arr(r).map(pt=>[num(pt?.[0]), num(pt?.[1])]).slice(0,20)).filter(r=>r.length>1).slice(0,8);
+    return {name:str(c?.name,40), mcb:str(c?.mcb,20), wire:str(c?.wire,40), rooms:arr(c?.rooms).map(r=>str(r,40)).slice(0,12), runs};
+  }).slice(0,14);
+  const db = e.db && Number.isFinite(+e.db.x) ? {x:num(e.db.x), y:num(e.db.y)} : null;
+  if(!points.length && !circuits.length) return null;
+  return {db, points, circuits, notes:arr(e.notes).map(n=>str(n,200)).slice(0,8)};
+}
+function cleanParking(p){ if(!p || typeof p!=="object" || !p.style) return null;
+  return {style:str(p.style,80), cars:clamp(Math.round(num(p.cars)),0,8), canopy:!!p.canopy, surface:str(p.surface,80), features:arr(p.features).map(f=>str(f,80)).slice(0,8), detail:str(p.detail,300)}; }
+function cleanFloor(p, d){
+  const lv = levelsFor(state.drawings.map(x=>x.floor)), i = state.drawings.indexOf(d);
+  const pr = p?.proposed && typeof p.proposed==="object" ? {rooms:cleanRooms(p.proposed.rooms), openings:cleanOpen(p.proposed.openings), changes:arr(p.proposed.changes).map(c=>str(c,240)).slice(0,10)} : null;
+  return {key:d.floor, label:floorLabel(d.floor), level:lv[i], services:[...d.services], notes:d.notes, summary:str(p?.summary,400),
+    rooms:cleanRooms(p?.rooms), openings:cleanOpen(p?.openings), proposed: pr && pr.rooms.length ? pr : null,
+    finishes:cleanFinishes(p?.finishes), furniture:cleanFurn(p?.furniture), electrical:cleanElec(p?.electrical), parking:cleanParking(p?.parking),
+    suggestions:cleanSugs(p?.suggestions).slice(0,8)};
+}
+function assemble(floors, w){
+  const d = w?.design || {};
   return {
-    title:String(p?.title||"Your home"), summary:String(p?.summary||""), floors,
-    suggestions:(Array.isArray(p?.suggestions)?p.suggestions:[]).map(s=>({category:String(s?.category||"General"), priority:["high","medium","low"].includes(s?.priority)?s.priority:"medium", title:String(s?.title||""), detail:String(s?.detail||"")})).slice(0,14),
-    design:{style:String(d.style||""), facade:String(d.facade||""),
-      palette:(Array.isArray(d.palette)?d.palette:[]).map(c=>({name:String(c?.name||""), hex:String(c?.hex||""), use:String(c?.use||"")})).slice(0,8),
-      materials:(Array.isArray(d.materials)?d.materials:[]).map(m=>({area:String(m?.area||""), material:String(m?.material||""), why:String(m?.why||"")})).slice(0,10)},
-    plan:(Array.isArray(p?.plan)?p.plan:[]).map(x=>({title:String(x?.title||""), detail:String(x?.detail||""), duration:String(x?.duration||"")})).slice(0,10),
-    cost: p?.cost && num(p.cost.high) > 0 ? {low:num(p.cost.low), high:num(p.cost.high), basis:String(p.cost.basis||"")} : null,
-    notes:String(p?.notes||"")
+    title:str(w?.title||"Your home",80), summary:str(w?.summary,600), facade:["modern","classic","minimal"].includes(w?.facade)?w.facade:"",
+    floors,
+    suggestions:[...cleanSugs(w?.suggestions), ...floors.flatMap(f=>f.suggestions.map(s=>({...s, category:`${f.label} · ${s.category}`})))],
+    design:{style:str(d.style,60), facade:str(d.facade,400),
+      palette:arr(d.palette).map(c=>({name:str(c?.name,40), hex:str(c?.hex,7), use:str(c?.use,60)})).slice(0,8),
+      materials:arr(d.materials).map(m=>({area:str(m?.area,40), material:str(m?.material,160), why:str(m?.why,200)})).slice(0,10)},
+    plan:arr(w?.plan).map(x=>({title:str(x?.title,80), detail:str(x?.detail,300), duration:str(x?.duration,40)})).slice(0,10),
+    cost: w?.cost && num(w.cost.high) > 0 ? {low:num(w.cost.low), high:num(w.cost.high), basis:str(w.cost.basis,200)} : null,
+    notes:str(w?.notes,300)
   };
 }
 
-async function shrink(file, maxSide=1500){
+async function shrink(file, maxSide=1600){
   const img = await createImageBitmap(file);
   const k = Math.min(1, maxSide/Math.max(img.width, img.height));
   const c = document.createElement("canvas"); c.width = Math.round(img.width*k); c.height = Math.round(img.height*k);
@@ -1180,59 +1794,117 @@ async function shrink(file, maxSide=1500){
 }
 const blobToB64 = b => new Promise((res,rej)=>{ const r = new FileReader(); r.onload = ()=>res(String(r.result).split(",")[1]); r.onerror = rej; r.readAsDataURL(b); });
 
-let sample = null, sampleMax = 4, sampleReady = Promise.resolve(), ctl = null, loadTimer = null;
+let sample = null, sampleReady = Promise.resolve();
 if(IS_CLAUDE){
-  sampleReady = (async ()=>{ try{ const s = await claude.use("sample"); const lim = s ? await s.limits().catch(()=>null) : null; sample = s && lim?.images ? s : null; if(lim?.images) sampleMax = lim.images.maxCount; }catch{ sample = null; } })();
+  sampleReady = (async ()=>{ try{ const s = await claude.use("sample"); const lim = s ? await s.limits().catch(()=>null) : null; sample = s && lim?.images ? s : null; }catch{ sample = null; } })();
 } else {
   $("pwWrap").hidden = false;
   try{ $("pw").value = sessionStorage.getItem("plan3d-pw") || ""; }catch{}
 }
+const SAMPLE_ERR = {not_granted:"AI access is turned off for this page. Allow it from the page's Permissions menu.", rate_limited:"Too many requests right now. Wait a minute, then retry.",
+  image_rejected:"This page couldn't be read as an image.", invalid_json:"The agent's answer came back in an unexpected format.",
+  refused:"The agent couldn't work on this page.", session_expired:"Your session expired. Sign in again and retry.", prompt_too_large:"The notes are too long. Shorten them and retry."};
+const errText = e => (e?.code==="server"||e?.code==="empty") ? e.message : (SAMPLE_ERR[e?.code] || "The agent couldn't finish. Check your connection and retry.");
 
-const SAMPLE_ERR = {not_granted:"AI access is turned off for this page. Allow it from the page's Permissions menu.", rate_limited:"Too many requests right now. Wait a minute and try again.",
-  image_rejected:"One of the images couldn't be read. Try a smaller JPG or PNG.", invalid_json:"The design came back in an unexpected format. Try again.",
-  refused:"Claude couldn't analyse these drawings. Try different images.", session_expired:"Your session expired. Sign in again and retry.", prompt_too_large:"Your notes are too long. Shorten them and try again."};
+async function callAI(prompt, blobs, signal, tier){
+  if(IS_CLAUDE){
+    const opts = {modelTier:tier, signal}; if(blobs.length) opts.images = blobs;
+    return await sample.json(prompt, opts);
+  }
+  const pw = $("pw").value.trim();
+  const images = await Promise.all(blobs.map(async b=>({data:await blobToB64(b), mediaType:"image/jpeg"})));
+  const r = await fetch("/dreamhouse/api/analyze", {method:"POST", signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt})});
+  const raw = await r.json().catch(()=>({error:"The server sent an unreadable reply. Try again."}));
+  if(!r.ok) throw {code:"server", message: raw.error || "Something went wrong. Try again."};
+  try{ sessionStorage.setItem("plan3d-pw", pw); }catch{}
+  return raw;
+}
 
+/* ---- agent board ---- */
+let agents = [], lead = {status:"queued"}, runCtl = null, runTimer = null, runT0 = 0, running = false;
+const STAGES = {layout:["Reading the drawing","Measuring rooms","Building walls and openings"], redesign:["Reworking the layout","Checking room sizes"],
+  interior:["Placing furniture","Styling each room"], flooring:["Choosing flooring and finishes"], electrical:["Placing switches and sockets","Routing circuits to the DB"], parking:["Planning the parking"]};
+function agentStage(a){
+  const st = a.d.services.flatMap(s=>STAGES[s]||[]); st.push("Writing suggestions");
+  const i = Math.min(st.length-1, Math.floor((Date.now()-a.t0)/9000));
+  return st[i];
+}
+function paintAgents(){
+  const sec = s => `${Math.round(s/1000)} s`;
+  const card = (n, title, tasks, a, retry) => {
+    const status = a.status==="working" ? `<span class="pulse" aria-hidden="true"></span>${esc(a.stage||"Working")} · ${sec(Date.now()-a.t0)}`
+      : a.status==="done" ? `Done in ${sec(a.t1-a.t0)}` : a.status==="failed" ? esc(a.error||"Failed") : a.status==="stopped" ? "Stopped" : "Waiting";
+    return `<li class="ag ${a.status}"><span class="ag-n">${n}</span><div class="ag-b"><div class="row between"><h3>${esc(title)}</h3>${retry && a.status==="failed" ? `<button data-retry="${retry}">Retry</button>`:""}</div>
+      <div class="mini-chips">${tasks.map(t=>`<span>${esc(t)}</span>`).join("")}</div><p class="ag-s">${status}</p></div></li>`;
+  };
+  agents.forEach(a=>{ if(a.status==="working") a.stage = agentStage(a); });
+  $("agentList").innerHTML = agents.map(a=>card(a.n, `Agent ${a.n} · ${floorLabel(a.d.floor)}`, a.d.services.map(svcLabel), a, String(a.n))).join("") +
+    card("★", "Lead architect · whole home", ["Combine floors","Front design","Palette & materials","Cost & build plan"], lead, null);
+  $("agentList").querySelectorAll("[data-retry]").forEach(b=>b.onclick=()=>retryAgent(+b.dataset.retry));
+  $("boardTime").textContent = running ? `${sec(Date.now()-runT0)} so far · each agent usually takes 1 to 3 minutes` : "";
+}
+async function runAgent(a){
+  a.status = "working"; a.error = ""; a.t0 = Date.now(); paintAgents();
+  try{
+    const blob = await shrink(a.d.file);
+    const raw = await callAI(floorPrompt(a.d), [blob], runCtl.signal, "complex");
+    const f = cleanFloor(raw, a.d);
+    if(!f.rooms.length) throw {code:"empty", message: raw?.summary ? String(raw.summary).slice(0,200) : "No rooms were found on this page."};
+    a.result = f; a.status = "done"; a.t1 = Date.now();
+  }catch(e){
+    if(e?.code==="cancelled" || e?.name==="AbortError" || runCtl.signal.aborted) a.status = "stopped";
+    else { a.status = "failed"; a.error = errText(e); }
+  }
+  paintAgents();
+}
+async function runPool(list){
+  const q = [...list];
+  await Promise.all(Array.from({length:Math.min(3, q.length)}, async ()=>{ while(q.length && !runCtl.signal.aborted) await runAgent(q.shift()); }));
+}
+async function afterFloors(){
+  if(runCtl.signal.aborted) return;
+  const ok = agents.filter(a=>a.status==="done"), failed = agents.filter(a=>a.status==="failed");
+  const bs = $("boardStatus");
+  if(agents.some(a=>a.status==="working")) return;
+  if(!ok.length){ running = false; bs.classList.add("err"); bs.textContent = "No page could be read. Retry the agents, or go back and check your drawings."; $("boardBack").hidden = false; paintAgents(); return; }
+  if(failed.length){ bs.classList.add("err"); bs.textContent = `${failed.length} agent${failed.length>1?"s":""} couldn't finish. Retry, or continue with the ${ok.length} finished floor${ok.length>1?"s":""}.`; $("boardResults").hidden = false; return; }
+  await runLead();
+}
+async function retryAgent(n){
+  const a = agents.find(x=>x.n===n); if(!a || a.status==="working") return;
+  if(runCtl.signal.aborted) runCtl = new AbortController();
+  running = true; $("boardStatus").textContent = ""; $("boardResults").hidden = true; $("boardBack").hidden = true;
+  await runAgent(a); await afterFloors();
+}
+async function runLead(){
+  $("boardResults").hidden = true; $("boardStatus").textContent = ""; $("boardStatus").classList.remove("err");
+  const floors = agents.filter(a=>a.status==="done").map(a=>a.result);
+  lead.status = "working"; lead.t0 = Date.now(); lead.stage = "Combining the floors"; paintAgents();
+  let whole = {};
+  try{ whole = await callAI(leadPrompt(floors), [], runCtl.signal, "default"); lead.status = "done"; lead.t1 = Date.now(); }
+  catch(e){ if(runCtl.signal.aborted) return; lead.status = "failed"; lead.error = "Couldn't combine the floors. Showing each floor's own results."; }
+  paintAgents();
+  running = false; clearInterval(runTimer);
+  state.plan = assemble(floors, whole);
+  state.version = floors.some(f=>f.proposed) ? "proposed" : "original";
+  openResults();
+}
 $("generate").onclick = async ()=>{
   const s2 = $("s2status"); s2.classList.add("err"); s2.textContent = "";
   if(!IS_CLAUDE && !$("pw").value.trim()){ s2.textContent = "Enter your access password."; $("pw").focus(); return; }
-  if(IS_CLAUDE){
-    await sampleReady;
-    if(!sample){ s2.textContent = "AI analysis isn't available in this view. Open the page in the Claude app or on claude.ai."; return; }
-    if(state.drawings.length > sampleMax){ s2.textContent = `This view accepts up to ${sampleMax} images at once.`; return; }
-  }
+  if(IS_CLAUDE){ await sampleReady; if(!sample){ s2.textContent = "AI analysis isn't available in this view. Open the page in the Claude app or on claude.ai."; return; } }
   s2.classList.remove("err");
-  ctl = new AbortController();
-  show("loading");
-  const msgs = ["Reading your drawings","Measuring rooms","Stacking the floors","Applying your wishes","Choosing materials and colours","Drafting the build plan"];
-  let i = 0; const t0 = Date.now(); $("loadMsg").textContent = msgs[0]; $("loadTime").textContent = "A full house usually takes 1 to 3 minutes.";
-  loadTimer = setInterval(()=>{ i = Math.min(i+1, msgs.length-1); $("loadMsg").textContent = msgs[i];
-    $("loadTime").textContent = `${Math.round((Date.now()-t0)/1000)} s · a full house usually takes 1 to 3 minutes.`; }, 9000);
-  try{
-    const blobs = await Promise.all(state.drawings.map(d=>shrink(d.file)));
-    const prompt = buildPrompt();
-    let raw;
-    if(IS_CLAUDE){
-      raw = await sample.json(prompt, {images:blobs, modelTier:"complex", signal:ctl.signal});
-    } else {
-      const pw = $("pw").value.trim();
-      const images = await Promise.all(blobs.map(async b=>({data:await blobToB64(b), mediaType:"image/jpeg"})));
-      const r = await fetch("/dreamhouse/api/analyze", {method:"POST", signal:ctl.signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt})});
-      raw = await r.json().catch(()=>({error:"The server sent an unreadable reply. Try again."}));
-      if(!r.ok) throw {code:"server", message: raw.error || "Something went wrong. Try again."};
-      try{ sessionStorage.setItem("plan3d-pw", pw); }catch{}
-    }
-    const plan = clean(raw);
-    if(!plan.floors.length) throw {code:"empty", message: plan.notes || "No rooms were found in these drawings. Try clearer images."};
-    state.plan = plan; state.version = plan.floors.some(f=>f.proposed) ? "proposed" : "original";
-    openResults();
-  }catch(e){
-    show("wizard"); step(2);
-    const cancelled = e?.code==="cancelled" || e?.name==="AbortError";
-    s2.classList.toggle("err", !cancelled);
-    s2.textContent = cancelled ? "Stopped." : ((e?.code==="server"||e?.code==="empty") ? e.message : SAMPLE_ERR[e?.code] || "Couldn't build the model. Check your connection and try again.");
-  }finally{ clearInterval(loadTimer); }
+  runCtl = new AbortController(); running = true; runT0 = Date.now();
+  agents = state.drawings.map((d,i)=>({n:i+1, d, status:"queued"})); lead = {status:"queued"};
+  $("boardStatus").textContent = ""; $("boardResults").hidden = true; $("boardBack").hidden = true;
+  show("loading"); paintAgents();
+  clearInterval(runTimer); runTimer = setInterval(()=>{ if(running) paintAgents(); }, 1000);
+  await runPool(agents);
+  await afterFloors();
 };
-$("stop").onclick = ()=>ctl?.abort();
+$("stop").onclick = ()=>{ runCtl?.abort(); running = false; clearInterval(runTimer); show("wizard"); step(2); const s2 = $("s2status"); s2.classList.remove("err"); s2.textContent = "Stopped. Your pages and wishes are still here."; };
+$("boardResults").onclick = ()=>runLead();
+$("boardBack").onclick = ()=>{ running = false; clearInterval(runTimer); show("wizard"); step(1); };
 
 /* ---------------- export ---------------- */
 let exFmt = "png", exRes = 3840;
@@ -1311,6 +1983,32 @@ async function buildPdf(longSide){
     const ch = state.version==="proposed" ? (f.proposed?.changes||[]) : [];
     if(ch.length){ let yc = M+15+h1+7; pdf.setFont("helvetica","bold"); pdf.setFontSize(10); pdf.setTextColor(29,37,40); pdf.text("What the proposal changes", M, yc); yc += 5;
       ch.forEach(c=>{ yc = para("- " + c, M, yc, w1, 9, [93,106,111]); }); }
+  }
+
+  for(const f of sortedFloors()){
+    const useFinal = !f.proposed || state.version==="proposed";
+    if(!useFinal) continue;
+    if(f.furniture?.length || f.finishes?.length){
+      pdf.addPage(); head(`${f.label} - interior plan`, (f.services||[]).filter(x=>["interior","flooring"].includes(x)).map(svcLabel).join(", "));
+      const c = await svgToCanvas(planSVG(f, {elec:false}), 2000), k = Math.min(170/c.width, (PH-40)/c.height), iw = c.width*k, ih = c.height*k;
+      pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", M, M+15, iw, ih);
+      let yy = M+18; const x2 = M+iw+8, w2 = PW-x2-M;
+      (f.finishes||[]).forEach(x=>{ if(yy > PH-18) return; pdf.setFont("helvetica","bold"); pdf.setFontSize(9.5); pdf.setTextColor(29,37,40); pdf.text(txt(x.room), x2, yy); yy += 4;
+        yy = para([x.flooring && "Floor: "+x.flooring, x.walls && "Walls: "+x.walls, x.lighting && "Light: "+x.lighting].filter(Boolean).join(". "), x2, yy, w2, 8.5, [93,106,111]) + 1.5; });
+      if(f.parking && yy < PH-24){ pdf.setFont("helvetica","bold"); pdf.setFontSize(9.5); pdf.setTextColor(29,37,40); pdf.text("Parking: "+txt(f.parking.style), x2, yy); yy += 4; para(`${f.parking.surface}. ${f.parking.features.join(", ")}. ${f.parking.detail}`, x2, yy, w2, 8.5, [93,106,111]); }
+    }
+    if(f.electrical){
+      pdf.addPage(); head(`${f.label} - electrical plan`, `${f.electrical.points.length} points - ${f.electrical.circuits.length} circuits`);
+      const c = await svgToCanvas(planSVG(f, {furn:false}), 2000), k = Math.min(170/c.width, (PH-40)/c.height), iw = c.width*k, ih = c.height*k;
+      pdf.addImage(c.toDataURL("image/jpeg", 0.92), "JPEG", M, M+15, iw, ih);
+      let yy = M+18; const x2 = M+iw+8, w2 = PW-x2-M;
+      pdf.setFont("helvetica","bold"); pdf.setFontSize(10); pdf.setTextColor(29,37,40); pdf.text("Circuits", x2, yy); yy += 5;
+      f.electrical.circuits.forEach((cc,i)=>{ if(yy > PH-20) return; const n = parseInt(CIRCUIT_COLORS[i%CIRCUIT_COLORS.length].slice(1),16);
+        pdf.setFillColor((n>>16)&255,(n>>8)&255,n&255); pdf.rect(x2, yy-2.4, 5, 2, "F");
+        pdf.setFont("helvetica","bold"); pdf.setFontSize(9); pdf.setTextColor(29,37,40); pdf.text(txt(cc.name).slice(0,34), x2+7, yy); yy += 3.8;
+        yy = para(`${cc.mcb} MCB, ${cc.wire}. ${cc.rooms.join(", ")}`, x2+7, yy, w2-7, 8, [93,106,111]) + 1; });
+      if(f.electrical.notes.length && yy < PH-30){ yy += 2; f.electrical.notes.forEach(n=>{ if(yy < PH-14) yy = para("- "+n, x2, yy, w2, 8, [93,106,111]); }); }
+    }
   }
 
   const pageText = (title, items) => {

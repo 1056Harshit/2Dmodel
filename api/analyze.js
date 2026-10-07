@@ -30,13 +30,13 @@ module.exports = async (req, res) => {
   }
 
   const { images, prompt } = req.body || {};
-  if (!Array.isArray(images) || !images.length || !prompt) return res.status(400).json({ error: "Missing drawings or prompt." });
+  if (!Array.isArray(images) || !prompt) return res.status(400).json({ error: "Missing drawings or prompt." });
   if (images.length > 4) return res.status(400).json({ error: "Upload at most 4 drawings." });
   const OK = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   if (images.some(i => !i || typeof i.data !== "string" || !OK.includes(i.mediaType))) {
     return res.status(400).json({ error: "One of the drawings has an unsupported format." });
   }
-  if (String(prompt).length > 20000) return res.status(400).json({ error: "Request is too long." });
+  if (String(prompt).length > 60000) return res.status(400).json({ error: "Request is too long." });
 
   try {
     const r = await fetch("https://api.anthropic.com/v1/messages", {

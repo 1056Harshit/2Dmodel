@@ -7,6 +7,10 @@ Upload a drawing for each floor (Ground, First, Top floor…), tell the app how 
 - suggestions, a design palette, materials, a facade idea, a step-by-step build plan and a rough cost range
 - HD export: PNG or JPEG at Full HD or 4K, and a multi-page PDF report
 
+**Multi-page PDFs and agents.** Upload images or a multi-page PDF. Every page gets its own design agent. For each page you pick the floor, the tasks (improve layout, interior & furniture, flooring & finishes, switches & wiring, parking style) and your notes for that floor. The agents work in parallel (up to 3 at a time). A lead-architect agent then combines them into the whole-home design, palette, cost and build plan.
+
+**What the agents produce.** A furnished 3D model with textured floors, a Dollhouse view, villa front styles with evening lighting, furnished 2D plans, and electrical plans: switchboards, sockets, power points, lights, fans, AC, geyser, EV, the DB, and colour-coded circuits with MCB and wire sizes. Each agent follows a built-in architect's playbook (NBC room minimums, zoning, ventilation, electrical practice).
+
 - `dreamhouse/index.html` – the website, served at `/dreamhouse` (Three.js 3D viewer, no build step)
 - `api/analyze.js` – Vercel serverless function that sends the image to the Claude API
 - Access is protected by a password you choose, so only you can run the AI.
