@@ -223,6 +223,9 @@ button:active{transform:scale(.98)}
 .ag.failed .ag-s{color:var(--hi)}
 .pulse{width:8px;height:8px;border-radius:50%;background:var(--accent);animation:p 1s infinite ease-in-out;flex:none}
 .mini-chips{display:flex;flex-wrap:wrap;gap:4px}
+.mini-chips .pt.done{border-color:var(--lo);color:var(--lo)}
+.mini-chips .pt.working{border-color:var(--accent);color:var(--ink)}
+.mini-chips .pt.failed{border-color:var(--hi);color:var(--hi)}
 .mini-chips span{font-size:11.5px;border:1px solid var(--line);border-radius:999px;padding:2px 8px;color:var(--muted);background:var(--bg)}
 .team{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
 .team li{display:grid;grid-template-columns:38px minmax(0,1fr);gap:10px;align-items:start}
@@ -1666,47 +1669,67 @@ function wishesText(){
   ].map(([k,v])=>`- ${k}: ${v}`).join("\n");
 }
 
-function floorPrompt(d){
-  const has = k => d.services.includes(k);
-  const others = state.drawings.filter(x=>x!==d).map(x=>floorLabel(x.floor)).join(", ") || "none";
-  const tasks = [
-    `Read the drawing and rebuild this floor as axis-aligned rectangles in METERS. Origin (0,0) is the top-left outer corner of the building, x grows right, y grows down. Use printed dimensions when present (convert feet and inches); otherwise estimate from typical sizes (door 0.9 m, bed 2 m). Rooms tile the floor without big gaps or overlaps. Mark staircases with type "stair". Doors and windows are segments on walls: x,y is the start point, len in meters, orient "h" (along x) or "v" (along y).`,
-    has("redesign") ? `Propose an improved layout in "proposed", following the playbook and the owner's wishes. Keep the outer footprint, the staircase and structural walls. List each change in plain words.` : `Do not redesign this floor: set "proposed" to null.`
-  ];
-  if(has("interior")) tasks.push(`Interior design: for each room describe the look in "finishes" (lighting, furniture list) and place the main furniture pieces as rectangles in "furniture".`);
-  if(has("flooring")) tasks.push(`Flooring and finishes: for each room in "finishes" give the flooring (material and tile size), floor colour hex, wall finish and colour hex, ceiling and skirting.`);
-  if(has("electrical")) tasks.push(`Electrical: place every switchboard, socket, power socket, light, fan, AC, geyser, exhaust and the DB as points in "electrical", then group them into circuits with MCB rating, wire size and conduit runs drawn as polylines from the DB.`);
-  if(has("parking")) tasks.push(`Parking: propose the parking style for this floor (covered carport, pergola, stilt, open) with number of cars, surface and features in "parking".`);
-  tasks.push(`Give 3 to 6 specific suggestions for this floor.`);
-  const final = has("redesign") ? `the proposed layout` : `the layout as drawn`;
-  const parts = [
-    `"summary":"2 sentences about this floor"`,
-    `"rooms":[{"name":"Living room","type":"living|dining|kitchen|bedroom|bath|balcony|terrace|corridor|stair|utility|parking|garden|pooja|study|other","x":0,"y":0,"w":4.5,"d":3.6}]`,
-    `"openings":[{"type":"door|window","x":0,"y":1.2,"len":0.9,"orient":"h|v"}]`,
-    has("redesign") ? `"proposed":{"rooms":[same shape as rooms],"openings":[same shape as openings],"changes":["plain-language change"]}` : `"proposed":null`
-  ];
-  if(has("interior") || has("flooring")) parts.push(`"finishes":[{"room":"Living room","flooring":"Marble-look vitrified tile 800x1600","floorHex":"#E6DFD3","walls":"Matte emulsion with teak slat accent","wallHex":"#F1ECE2","ceiling":"Gypsum cove with warm LED strip","skirting":"100 mm matching tile","lighting":"3000K warm downlights","furniture":"L-sofa, TV unit, rug"}]`);
-  if(has("interior")) parts.push(`"furniture":[{"type":"bed|sofa|dining|table|desk|wardrobe|tv|counter|bath|plant|chair|other","name":"Queen bed","x":1.4,"y":9.9,"w":1.6,"d":2.0}]`);
-  if(has("electrical")) parts.push(`"electrical":{"db":{"x":4.3,"y":0.3},"points":[{"type":"switchboard|socket|power|light|fan|ac|geyser|exhaust|tv|data|bell|ev","room":"Living room","x":6.4,"y":0.15,"h":1.2,"note":"6-module, 2-way"}],"circuits":[{"name":"Lighting C1","mcb":"6A","wire":"1.5 sq mm FR copper","rooms":["Living room"],"runs":[[[4.3,0.3],[6.0,1.5]]]}],"notes":["installation note"]}`);
-  if(has("parking")) parts.push(`"parking":{"style":"Covered carport with timber pergola","cars":2,"canopy":true,"surface":"Interlocking pavers","features":["EV charger point"],"detail":"1-2 sentences"}`);
-  parts.push(`"suggestions":[{"category":"Layout|Light & ventilation|Storage|Accessibility|Electrical|Interior|Flooring|Parking|Vastu|Cost","priority":"high|medium|low","title":"short headline","detail":"1-2 sentences"}]`);
-  const vastu = $("vastuChip").checked;
-  return `You are a specialist design agent on a team designing ONE house. Your job is ONLY the attached drawing, which is the ${floorLabel(d.floor)}. Other agents handle: ${others}.
+const ROOM_SCHEMA = `{"name":"Living room","type":"living|dining|kitchen|bedroom|bath|balcony|terrace|corridor|stair|utility|parking|garden|pooja|study|other","x":0,"y":0,"w":4.5,"d":3.6}`;
+const OPEN_SCHEMA = `{"type":"door|window","x":0,"y":1.2,"len":0.9,"orient":"h|v"}`;
+const SUG_SCHEMA = `{"category":"Layout|Light & ventilation|Storage|Accessibility|Electrical|Interior|Flooring|Parking|Vastu|Cost","priority":"high|medium|low","title":"short headline","detail":"1-2 sentences"}`;
+function floorWishes(d){ return `Owner's wishes for the whole house:\n${wishesText()}\nOwner's wishes for THIS floor (${floorLabel(d.floor)}): ${d.notes.trim().slice(0,1200) || "none given"}`; }
 
-Your tasks:
-${tasks.map((t,i)=>`${i+1}. ${t}`).join("\n")}
-Furniture and electrical coordinates use the same origin and are placed on ${final}.${vastu ? ` Follow Vastu Shastra where practical (assume the top of the drawing is north unless a north arrow shows otherwise) and add Vastu suggestions.` : ""}
+/* step 1: read the drawing (and optionally redesign) — the only call that sees the image */
+function layoutPrompt(d){
+  const redesign = d.services.includes("redesign"), vastu = $("vastuChip").checked;
+  return `You are the layout architect on a team designing ONE house. The attached drawing is the ${floorLabel(d.floor)}.
+1. Rebuild this floor as axis-aligned rectangles in METERS. Origin (0,0) is the top-left outer corner of the building, x grows right, y grows down. Use printed dimensions when present (convert feet and inches); otherwise estimate from typical sizes (door 0.9 m, bed 2 m). Rooms tile the floor without big gaps or overlaps. Mark staircases with type "stair". Doors and windows are segments on walls: x,y is the start point, len in meters, orient "h" (along x) or "v" (along y).
+2. ${redesign ? `Propose an improved layout in "proposed" using the playbook and the owner's wishes. Keep the outer footprint, the staircase and structural walls. List each change in plain words.` : `Do not redesign: set "proposed" to null.`}
+3. Give 3 to 5 specific suggestions for this floor.${vastu ? " Follow Vastu Shastra where practical (top of the drawing is north unless a north arrow shows otherwise)." : ""}
 
 ${PLAYBOOK}
-${has("electrical") ? "\n"+ELEC_GUIDE+"\n" : ""}${has("interior")||has("flooring") ? "\n"+INTERIOR_GUIDE+"\n" : ""}
-Owner's wishes for the whole house:
-${wishesText()}
-Owner's wishes for THIS floor: ${d.notes.trim().slice(0,1200) || "none given"}
 
-Limits: up to 40 rooms, 100 electrical points, 10 circuits, 60 furniture pieces; each run up to 12 points. Keep text short.
-Reply with ONLY JSON in this shape:
-{${parts.join(",\n")}}
+${floorWishes(d)}
+
+Keep it compact: up to 30 rooms and 40 openings, short text. Reply with ONLY JSON:
+{"summary":"2 sentences about this floor","rooms":[${ROOM_SCHEMA}],"openings":[${OPEN_SCHEMA}],"proposed":${redesign ? `{"rooms":[same shape],"openings":[same shape],"changes":["plain-language change"]}` : "null"},"suggestions":[${SUG_SCHEMA}]}
 If the page is not a floor plan, sketch or site map, return {"rooms":[],"summary":"explain what the page shows"}.`;
+}
+
+/* step 2: specialists work from the finished layout (text only, run in parallel) */
+function layoutText(f){
+  const rooms = roomsOf(f).map(r=>({name:r.name, type:r.type, x:+r.x.toFixed(2), y:+r.y.toFixed(2), w:+r.w.toFixed(2), d:+r.d.toFixed(2)}));
+  const ops = openingsOf(f).map(o=>({type:o.type, x:+o.x.toFixed(2), y:+o.y.toFixed(2), len:+o.len.toFixed(2), orient:o.orient}));
+  return `Final layout of the ${f.label} in METERS (origin = top-left outer corner of the building, x right, y down):
+rooms: ${JSON.stringify(rooms)}
+doors and windows: ${JSON.stringify(ops)}`;
+}
+function specialistPrompt(kind, d, f){
+  const head = {
+    electrical:"You are the electrical engineer",
+    interior:"You are the interior designer",
+    parking:"You are the parking and landscape designer"
+  }[kind] + ` on a team designing ONE house. Work only on the ${f.label}. Place everything inside the rooms below, using the same coordinates.`;
+  let body, schema;
+  if(kind==="electrical"){
+    body = ELEC_GUIDE;
+    schema = `{"electrical":{"db":{"x":4.3,"y":0.3},"points":[{"type":"switchboard|socket|power|light|fan|ac|geyser|exhaust|tv|data|bell|ev","room":"Living room","x":6.4,"y":0.15,"h":1.2,"note":"short"}],"circuits":[{"name":"Lighting C1","mcb":"6A","wire":"1.5 sq mm FR copper","rooms":["Living room"],"runs":[[[4.3,0.3],[6.0,1.5]]]}],"notes":["installation note"]},"suggestions":[${SUG_SCHEMA}]}
+Limits: up to 70 points, 8 circuits, each run up to 8 points, 1-3 suggestions.`;
+  } else if(kind==="interior"){
+    const furn = d.services.includes("interior"), fl = d.services.includes("flooring");
+    body = INTERIOR_GUIDE + `\nFor each room give ${[fl && "the flooring (material and tile size), floor colour hex, wall finish and colour hex, ceiling and skirting", furn && "lighting and a short furniture list"].filter(Boolean).join(", and ")}.${furn ? " Place the main furniture pieces as rectangles inside the rooms." : ""}`;
+    schema = `{"finishes":[{"room":"Living room","flooring":"Marble-look vitrified tile 800x1600","floorHex":"#E6DFD3","walls":"Matte emulsion with teak slat accent","wallHex":"#F1ECE2","ceiling":"Gypsum cove","skirting":"100 mm tile","lighting":"3000K warm downlights","furniture":"L-sofa, TV unit, rug"}]${furn ? `,"furniture":[{"type":"bed|sofa|dining|table|desk|wardrobe|tv|counter|bath|plant|chair|other","name":"Queen bed","x":1.4,"y":9.9,"w":1.6,"d":2.0}]` : ""},"suggestions":[${SUG_SCHEMA}]}
+Limits: up to 40 furniture pieces, 1-3 suggestions, short text.`;
+  } else {
+    body = "Propose the parking style (covered carport, pergola, stilt, open), number of cars, surface and useful features such as an EV charger, lighting and drainage.";
+    schema = `{"parking":{"style":"Covered carport with timber pergola","cars":2,"canopy":true,"surface":"Interlocking pavers","features":["EV charger point"],"detail":"1-2 sentences"},"suggestions":[${SUG_SCHEMA}]}
+Limits: 1-2 suggestions.`;
+  }
+  return `${head}
+
+${layoutText(f)}
+
+${body}
+
+${floorWishes(d)}
+
+Reply with ONLY JSON:
+${schema}`;
 }
 
 function leadPrompt(floors){
@@ -1804,106 +1827,162 @@ if(IS_CLAUDE){
 const SAMPLE_ERR = {not_granted:"AI access is turned off for this page. Allow it from the page's Permissions menu.", rate_limited:"Too many requests right now. Wait a minute, then retry.",
   image_rejected:"This page couldn't be read as an image.", invalid_json:"The agent's answer came back in an unexpected format.",
   refused:"The agent couldn't work on this page.", session_expired:"Your session expired. Sign in again and retry.", prompt_too_large:"The notes are too long. Shorten them and retry."};
-const errText = e => (e?.code==="server"||e?.code==="empty") ? e.message : (SAMPLE_ERR[e?.code] || "The agent couldn't finish. Check your connection and retry.");
+const errText = e => (e?.code==="server"||e?.code==="empty") ? e.message : e?.code==="timeout" ? "This step took too long on the server. Press Retry." : e?.code==="rate_limited" && e.message ? e.message : (SAMPLE_ERR[e?.code] || "The agent couldn't finish. Check your connection and retry.");
 
-async function callAI(prompt, blobs, signal, tier){
+async function callAIOnce(prompt, blobs, signal, tier){
   if(IS_CLAUDE){
     const opts = {modelTier:tier, signal}; if(blobs.length) opts.images = blobs;
     return await sample.json(prompt, opts);
   }
   const pw = $("pw").value.trim();
   const images = await Promise.all(blobs.map(async b=>({data:await blobToB64(b), mediaType:"image/jpeg"})));
-  const r = await fetch("/dreamhouse/api/analyze", {method:"POST", signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt})});
-  const raw = await r.json().catch(()=>({error:"The server sent an unreadable reply. Try again."}));
+  const r = await fetch("/dreamhouse/api/analyze", {method:"POST", signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt, speed: tier==="quick" ? "fast" : "normal"})});
+  const raw = await r.json().catch(()=>null);
+  if(!raw){
+    if(r.status===504 || r.status===502 || r.status===500) throw {code:"timeout", message:"The server took too long on this step."};
+    throw {code:"server", message:"The server sent an unreadable reply. Try again."};
+  }
+  if(r.status===429) throw {code:"rate_limited", message: raw.error};
   if(!r.ok) throw {code:"server", message: raw.error || "Something went wrong. Try again."};
   try{ sessionStorage.setItem("plan3d-pw", pw); }catch{}
   return raw;
 }
+/* waits out rate limits and retries timeouts automatically */
+async function callAI(prompt, blobs, signal, tier, onWait){
+  for(let attempt=0;;attempt++){
+    try{ return await callAIOnce(prompt, blobs, signal, tier); }
+    catch(e){
+      if(signal.aborted || e?.code==="cancelled" || e?.name==="AbortError") throw e;
+      const retryable = e?.code==="rate_limited" || e?.code==="timeout";
+      if(!retryable || attempt >= 3) throw e;
+      const wait = e.code==="rate_limited" ? 15 + attempt*10 : 2;
+      for(let s=wait; s>0; s--){ if(signal.aborted) throw {code:"cancelled"}; onWait && onWait(e.code==="rate_limited" ? `Waiting for the AI's rate limit · ${s} s` : `Retrying a slow step`); await new Promise(r=>setTimeout(r,1000)); }
+    }
+  }
+}
 
 /* ---- agent board ---- */
 let agents = [], lead = {status:"queued"}, runCtl = null, runTimer = null, runT0 = 0, running = false;
-const STAGES = {layout:["Reading the drawing","Measuring rooms","Building walls and openings"], redesign:["Reworking the layout","Checking room sizes"],
-  interior:["Placing furniture","Styling each room"], flooring:["Choosing flooring and finishes"], electrical:["Placing switches and sockets","Routing circuits to the DB"], parking:["Planning the parking"]};
-function agentStage(a){
-  const st = a.d.services.flatMap(s=>STAGES[s]||[]); st.push("Writing suggestions");
-  const i = Math.min(st.length-1, Math.floor((Date.now()-a.t0)/9000));
-  return st[i];
-}
+const PART_LABEL = {layout:"Read drawing & layout", electrical:"Switches & wiring", interior:"Interior & finishes", parking:"Parking"};
+function partsFor(d){ const p = ["layout"]; if(d.services.includes("electrical")) p.push("electrical"); if(d.services.includes("interior")||d.services.includes("flooring")) p.push("interior"); if(d.services.includes("parking")) p.push("parking"); return p; }
+/* simple global concurrency limit */
+let slots = 4; const waiters = [];
+async function withSlot(fn){ while(slots<=0) await new Promise(r=>waiters.push(r)); slots--; try{ return await fn(); } finally { slots++; const w = waiters.shift(); w && w(); } }
+
 function paintAgents(){
   const sec = s => `${Math.round(s/1000)} s`;
-  const card = (n, title, tasks, a, retry) => {
-    const status = a.status==="working" ? `<span class="pulse" aria-hidden="true"></span>${esc(a.stage||"Working")} · ${sec(Date.now()-a.t0)}`
-      : a.status==="done" ? `Done in ${sec(a.t1-a.t0)}` : a.status==="failed" ? esc(a.error||"Failed") : a.status==="stopped" ? "Stopped" : "Waiting";
-    return `<li class="ag ${a.status}"><span class="ag-n">${n}</span><div class="ag-b"><div class="row between"><h3>${esc(title)}</h3>${retry && a.status==="failed" ? `<button data-retry="${retry}">Retry</button>`:""}</div>
-      <div class="mini-chips">${tasks.map(t=>`<span>${esc(t)}</span>`).join("")}</div><p class="ag-s">${status}</p></div></li>`;
+  const chips = a => a.parts.map(k=>{ const p = a.p[k]; return `<span class="pt ${p.st}">${p.st==="done"?"✓ ":p.st==="failed"?"! ":""}${esc(PART_LABEL[k])}</span>`; }).join("");
+  const line = a => {
+    if(a.status==="working"){ const w = a.parts.filter(k=>a.p[k].st==="working"); const note = w.map(k=>a.p[k].note).find(Boolean);
+      return `<span class="pulse" aria-hidden="true"></span>${esc(note || (w.length ? "Working on " + w.map(k=>PART_LABEL[k].toLowerCase()).join(", ") : "Queued"))} · ${sec(Date.now()-a.t0)}`; }
+    if(a.status==="done") return `Done in ${sec(a.t1-a.t0)}${a.parts.some(k=>a.p[k].st==="failed") ? " · some parts need a retry" : ""}`;
+    if(a.status==="failed") return esc(a.error||"Failed");
+    return a.status==="stopped" ? "Stopped" : "Waiting";
   };
-  agents.forEach(a=>{ if(a.status==="working") a.stage = agentStage(a); });
-  $("agentList").innerHTML = agents.map(a=>card(a.n, `Agent ${a.n} · ${floorLabel(a.d.floor)}`, a.d.services.map(svcLabel), a, String(a.n))).join("") +
-    card("★", "Lead architect · whole home", ["Combine floors","Front design","Palette & materials","Cost & build plan"], lead, null);
+  const retry = a => (a.status==="failed" || a.parts.some(k=>a.p[k].st==="failed")) && !running ? `<button data-retry="${a.n}">Retry</button>` : "";
+  $("agentList").innerHTML = agents.map(a=>`<li class="ag ${a.status}"><span class="ag-n">${a.n}</span><div class="ag-b"><div class="row between"><h3>Agent ${a.n} · ${esc(floorLabel(a.d.floor))}</h3>${retry(a)}</div>
+      <div class="mini-chips">${chips(a)}</div><p class="ag-s">${line(a)}</p></div></li>`).join("") +
+    `<li class="ag ${lead.status}"><span class="ag-n">★</span><div class="ag-b"><div class="row between"><h3>Lead architect · whole home</h3></div>
+      <div class="mini-chips"><span>Combine floors</span><span>Front design</span><span>Palette & materials</span><span>Cost & build plan</span></div>
+      <p class="ag-s">${lead.status==="working" ? `<span class="pulse" aria-hidden="true"></span>${esc(lead.note||"Combining the floors")} · ${sec(Date.now()-lead.t0)}` : lead.status==="done" ? `Done in ${sec(lead.t1-lead.t0)}` : lead.status==="failed" ? esc(lead.error) : "Starts when every layout is ready"}</p></div></li>`;
   $("agentList").querySelectorAll("[data-retry]").forEach(b=>b.onclick=()=>retryAgent(+b.dataset.retry));
-  $("boardTime").textContent = running ? `${sec(Date.now()-runT0)} so far · each agent usually takes 1 to 3 minutes` : "";
+  $("boardTime").textContent = running ? `${sec(Date.now()-runT0)} so far · usually 1 to 2 minutes in total` : "";
 }
-async function runAgent(a){
-  a.status = "working"; a.error = ""; a.t0 = Date.now(); paintAgents();
+
+async function runPart(a, k){
+  const p = a.p[k]; p.st = "working"; p.note = ""; paintAgents();
   try{
-    const blob = await shrink(a.d.file);
-    const raw = await callAI(floorPrompt(a.d), [blob], runCtl.signal, "complex");
-    const f = cleanFloor(raw, a.d);
-    if(!f.rooms.length) throw {code:"empty", message: raw?.summary ? String(raw.summary).slice(0,200) : "No rooms were found on this page."};
-    a.result = f; a.status = "done"; a.t1 = Date.now();
+    if(k==="layout"){
+      const blob = await shrink(a.d.file, 1400);
+      const raw = await withSlot(()=>callAI(layoutPrompt(a.d), [blob], runCtl.signal, "default", n=>{ p.note = n; }));
+      const f = cleanFloor(raw, a.d);
+      if(!f.rooms.length) throw {code:"empty", message: raw?.summary ? String(raw.summary).slice(0,200) : "No rooms were found on this page."};
+      a.result = f;
+    } else {
+      const raw = await withSlot(()=>callAI(specialistPrompt(k, a.d, a.result), [], runCtl.signal, "quick", n=>{ p.note = n; }));
+      if(k==="electrical") a.result.electrical = cleanElec(raw?.electrical);
+      if(k==="interior"){ a.result.finishes = cleanFinishes(raw?.finishes); a.result.furniture = cleanFurn(raw?.furniture); }
+      if(k==="parking") a.result.parking = cleanParking(raw?.parking);
+      a.result.suggestions = [...a.result.suggestions, ...cleanSugs(raw?.suggestions).slice(0,3)].slice(0,10);
+    }
+    p.st = "done";
   }catch(e){
-    if(e?.code==="cancelled" || e?.name==="AbortError" || runCtl.signal.aborted) a.status = "stopped";
-    else { a.status = "failed"; a.error = errText(e); }
+    if(runCtl.signal.aborted || e?.code==="cancelled" || e?.name==="AbortError"){ p.st = "stopped"; throw e; }
+    p.st = "failed"; p.error = errText(e);
+    if(k==="layout") throw e;
+  }finally{ paintAgents(); }
+}
+async function runAgent(a, onlyFailed){
+  a.status = "working"; a.error = ""; a.t0 = a.t0 && onlyFailed ? a.t0 : Date.now(); paintAgents();
+  try{
+    if(!onlyFailed || a.p.layout.st!=="done") await runPart(a, "layout");
+    layoutReady();
+    const rest = a.parts.filter(k=>k!=="layout" && (!onlyFailed || a.p[k].st!=="done"));
+    await Promise.all(rest.map(k=>runPart(a, k)));
+    a.status = "done"; a.t1 = Date.now();
+  }catch(e){
+    if(runCtl.signal.aborted || e?.code==="cancelled" || e?.name==="AbortError") a.status = "stopped";
+    else { a.status = "failed"; a.error = a.p.layout.st==="failed" ? a.p.layout.error : errText(e); }
+    layoutReady();
   }
   paintAgents();
 }
-async function runPool(list){
-  const q = [...list];
-  await Promise.all(Array.from({length:Math.min(3, q.length)}, async ()=>{ while(q.length && !runCtl.signal.aborted) await runAgent(q.shift()); }));
+/* the lead architect starts as soon as every layout is finished, in parallel with the specialists */
+let leadPromise = null, whole = null;
+function layoutReady(){
+  if(leadPromise || runCtl.signal.aborted) return;
+  if(agents.some(a=>a.p.layout.st==="working" || a.p.layout.st==="queued")) return;
+  const floors = agents.filter(a=>a.p.layout.st==="done").map(a=>a.result);
+  if(!floors.length) return;
+  lead.status = "working"; lead.t0 = Date.now(); paintAgents();
+  leadPromise = withSlot(()=>callAI(leadPrompt(floors), [], runCtl.signal, "quick", n=>{ lead.note = n; }))
+    .then(w=>{ whole = w; lead.status = "done"; lead.t1 = Date.now(); })
+    .catch(e=>{ if(runCtl.signal.aborted) return; whole = {}; lead.status = "failed"; lead.error = "Couldn't combine the floors. Showing each floor's own results."; })
+    .finally(paintAgents);
 }
-async function afterFloors(){
+async function finishRun(){
   if(runCtl.signal.aborted) return;
-  const ok = agents.filter(a=>a.status==="done"), failed = agents.filter(a=>a.status==="failed");
-  const bs = $("boardStatus");
-  if(agents.some(a=>a.status==="working")) return;
-  if(!ok.length){ running = false; bs.classList.add("err"); bs.textContent = "No page could be read. Retry the agents, or go back and check your drawings."; $("boardBack").hidden = false; paintAgents(); return; }
-  if(failed.length){ bs.classList.add("err"); bs.textContent = `${failed.length} agent${failed.length>1?"s":""} couldn't finish. Retry, or continue with the ${ok.length} finished floor${ok.length>1?"s":""}.`; $("boardResults").hidden = false; return; }
-  await runLead();
+  if(leadPromise) await leadPromise;
+  if(runCtl.signal.aborted) return;
+  running = false; clearInterval(runTimer); paintAgents();
+  const ok = agents.filter(a=>a.p.layout.st==="done"), bs = $("boardStatus");
+  if(!ok.length){ bs.classList.add("err"); bs.textContent = "No page could be read. Retry the agents, or go back and check your drawings."; $("boardBack").hidden = false; return; }
+  const partial = agents.some(a=>a.status==="failed" || a.parts.some(k=>a.p[k].st==="failed"));
+  if(partial){ bs.classList.add("err"); bs.textContent = "Some parts couldn't finish. Retry them, or continue with what's ready."; $("boardResults").hidden = false; return; }
+  showPlan();
 }
-async function retryAgent(n){
-  const a = agents.find(x=>x.n===n); if(!a || a.status==="working") return;
-  if(runCtl.signal.aborted) runCtl = new AbortController();
-  running = true; $("boardStatus").textContent = ""; $("boardResults").hidden = true; $("boardBack").hidden = true;
-  await runAgent(a); await afterFloors();
-}
-async function runLead(){
-  $("boardResults").hidden = true; $("boardStatus").textContent = ""; $("boardStatus").classList.remove("err");
-  const floors = agents.filter(a=>a.status==="done").map(a=>a.result);
-  lead.status = "working"; lead.t0 = Date.now(); lead.stage = "Combining the floors"; paintAgents();
-  let whole = {};
-  try{ whole = await callAI(leadPrompt(floors), [], runCtl.signal, "default"); lead.status = "done"; lead.t1 = Date.now(); }
-  catch(e){ if(runCtl.signal.aborted) return; lead.status = "failed"; lead.error = "Couldn't combine the floors. Showing each floor's own results."; }
-  paintAgents();
-  running = false; clearInterval(runTimer);
-  state.plan = assemble(floors, whole);
+function showPlan(){
+  const floors = agents.filter(a=>a.p.layout.st==="done").map(a=>a.result);
+  state.plan = assemble(floors, whole || {});
   state.version = floors.some(f=>f.proposed) ? "proposed" : "original";
   openResults();
+}
+async function retryAgent(n){
+  const a = agents.find(x=>x.n===n); if(!a || running) return;
+  if(runCtl.signal.aborted) runCtl = new AbortController();
+  running = true; clearInterval(runTimer); runTimer = setInterval(()=>{ if(running) paintAgents(); }, 1000);
+  $("boardStatus").textContent = ""; $("boardStatus").classList.remove("err"); $("boardResults").hidden = true; $("boardBack").hidden = true;
+  const hadLayout = a.p.layout.st==="done";
+  await runAgent(a, true);
+  if(!hadLayout && a.p.layout.st==="done"){ leadPromise = null; layoutReady(); }
+  await finishRun();
 }
 $("generate").onclick = async ()=>{
   const s2 = $("s2status"); s2.classList.add("err"); s2.textContent = "";
   if(!IS_CLAUDE && !$("pw").value.trim()){ s2.textContent = "Enter your access password."; $("pw").focus(); return; }
   if(IS_CLAUDE){ await sampleReady; if(!sample){ s2.textContent = "AI analysis isn't available in this view. Open the page in the Claude app or on claude.ai."; return; } }
   s2.classList.remove("err");
-  runCtl = new AbortController(); running = true; runT0 = Date.now();
-  agents = state.drawings.map((d,i)=>({n:i+1, d, status:"queued"})); lead = {status:"queued"};
-  $("boardStatus").textContent = ""; $("boardResults").hidden = true; $("boardBack").hidden = true;
+  runCtl = new AbortController(); running = true; runT0 = Date.now(); leadPromise = null; whole = null; slots = 4;
+  agents = state.drawings.map((d,i)=>{ const parts = partsFor(d); return {n:i+1, d, status:"queued", parts, p:Object.fromEntries(parts.map(k=>[k,{st:"queued"}]))}; });
+  lead = {status:"queued"};
+  $("boardStatus").textContent = ""; $("boardStatus").classList.remove("err"); $("boardResults").hidden = true; $("boardBack").hidden = true;
   show("loading"); paintAgents();
   clearInterval(runTimer); runTimer = setInterval(()=>{ if(running) paintAgents(); }, 1000);
-  await runPool(agents);
-  await afterFloors();
+  await Promise.all(agents.map(a=>runAgent(a)));
+  await finishRun();
 };
 $("stop").onclick = ()=>{ runCtl?.abort(); running = false; clearInterval(runTimer); show("wizard"); step(2); const s2 = $("s2status"); s2.classList.remove("err"); s2.textContent = "Stopped. Your pages and wishes are still here."; };
-$("boardResults").onclick = ()=>runLead();
+$("boardResults").onclick = async ()=>{ if(leadPromise) await leadPromise; else layoutReady(); if(leadPromise) await leadPromise; showPlan(); };
 $("boardBack").onclick = ()=>{ running = false; clearInterval(runTimer); show("wizard"); step(1); };
 
 /* ---------------- export ---------------- */

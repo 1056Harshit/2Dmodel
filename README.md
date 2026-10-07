@@ -68,4 +68,4 @@ The app lives at `/dreamhouse` and calls its API at `/dreamhouse/api/analyze`, s
 - Rooms are modelled as rectangles; L-shaped or angled rooms are approximated.
 - Plans with printed dimensions give the most accurate result. For PDFs, screenshot the plan page.
 - Large photos are shrunk to 1600 px in the browser before upload.
-- Analysing a full house can take 1–3 minutes; `vercel.json` allows the function up to 300 s. Each analysis is one Claude API call, billed to your Anthropic account.
+- Each floor is split into small steps: one call reads the drawing, then wiring, interior and parking run in parallel with the lead architect. A full house usually takes 1–2 minutes. Rate limits are waited out and retried automatically.
