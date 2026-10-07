@@ -1216,7 +1216,7 @@ $("generate").onclick = async ()=>{
     } else {
       const pw = $("pw").value.trim();
       const images = await Promise.all(blobs.map(async b=>({data:await blobToB64(b), mediaType:"image/jpeg"})));
-      const r = await fetch("/api/analyze", {method:"POST", signal:ctl.signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt})});
+      const r = await fetch("/dreamhouse/api/analyze", {method:"POST", signal:ctl.signal, headers:{"content-type":"application/json","x-app-password":pw}, body:JSON.stringify({images, prompt})});
       raw = await r.json().catch(()=>({error:"The server sent an unreadable reply. Try again."}));
       if(!r.ok) throw {code:"server", message: raw.error || "Something went wrong. Try again."};
       try{ sessionStorage.setItem("plan3d-pw", pw); }catch{}

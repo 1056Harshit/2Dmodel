@@ -1,5 +1,11 @@
 {
   "functions": {
     "api/analyze.js": { "maxDuration": 300 }
-  }
+  },
+  "redirects": [
+    { "source": "/", "destination": "/dreamhouse", "permanent": false }
+  ],
+  "rewrites": [
+    { "source": "/dreamhouse/api/:path*", "destination": "/api/:path*" }
+  ]
 }

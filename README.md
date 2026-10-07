@@ -7,7 +7,7 @@ Upload a drawing for each floor (Ground, First, Top floor…), tell the app how 
 - suggestions, a design palette, materials, a facade idea, a step-by-step build plan and a rough cost range
 - HD export: PNG or JPEG at Full HD or 4K, and a multi-page PDF report
 
-- `index.html` – the website (Three.js 3D viewer, no build step)
+- `dreamhouse/index.html` – the website, served at `/dreamhouse` (Three.js 3D viewer, no build step)
 - `api/analyze.js` – Vercel serverless function that sends the image to the Claude API
 - Access is protected by a password you choose, so only you can run the AI.
 
@@ -34,6 +34,13 @@ vercel env add ANTHROPIC_API_KEY
 vercel env add APP_PASSWORD
 vercel --prod
 ```
+
+## Custom domain: pvtfrnd.com/dreamhouse
+
+The app lives at `/dreamhouse` and calls its API at `/dreamhouse/api/analyze`, so it can sit under a path on any domain.
+
+- **pvtfrnd.com has no other site:** in this Vercel project open Settings → Domains, add `pvtfrnd.com` (and `www.pvtfrnd.com`), and set the DNS records Vercel shows at your domain registrar. `pvtfrnd.com` redirects to `pvtfrnd.com/dreamhouse`.
+- **pvtfrnd.com already hosts another site:** keep that site and forward `/dreamhouse` to this project. On a Vercel or Next.js site add a rewrite from `/dreamhouse/:path*` to `https://2dmodel3d.vercel.app/dreamhouse/:path*` (plus `/dreamhouse` → `https://2dmodel3d.vercel.app/dreamhouse`).
 
 ## Keeping it private
 
