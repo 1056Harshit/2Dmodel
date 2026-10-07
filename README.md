@@ -23,6 +23,7 @@ Upload a drawing for each floor (Ground, First, Top floor…), tell the app how 
 4. **Add environment variables** (Project → Settings → Environment Variables):
    - `ANTHROPIC_API_KEY` = your Claude API key
    - `APP_PASSWORD` = a password only you know
+   - `ANTHROPIC_WORKSPACE_ID` (optional) = only if your key is not tied to a workspace
    - `CLAUDE_MODEL` (optional) = defaults to `claude-sonnet-5-5`. Use `claude-opus-5-5` for higher accuracy at higher cost.
 5. **Deploy** (or Redeploy if you added the variables after the first deploy).
 

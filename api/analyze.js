@@ -1,5 +1,6 @@
 // Vercel serverless function: sends the uploaded plan image to Claude and returns the layout JSON.
-// Required env vars: ANTHROPIC_API_KEY, APP_PASSWORD. Optional: CLAUDE_MODEL.
+// Required env vars: ANTHROPIC_API_KEY, APP_PASSWORD. Optional: CLAUDE_MODEL, ANTHROPIC_WORKSPACE_ID
+// (only needed for keys that aren't tied to a workspace).
 
 const crypto = require("crypto");
 
@@ -21,7 +22,7 @@ function extractJson(text) {
 module.exports = async (req, res) => {
   if (req.method !== "POST") return res.status(405).json({ error: "Use POST." });
 
-  const { APP_PASSWORD, ANTHROPIC_API_KEY, CLAUDE_MODEL } = process.env;
+  const { APP_PASSWORD, ANTHROPIC_API_KEY, CLAUDE_MODEL, ANTHROPIC_WORKSPACE_ID } = process.env;
   if (!APP_PASSWORD || !ANTHROPIC_API_KEY) {
     return res.status(500).json({ error: "Server is missing ANTHROPIC_API_KEY or APP_PASSWORD. Add them in Vercel → Settings → Environment Variables, then redeploy." });
   }
@@ -31,7 +32,7 @@ module.exports = async (req, res) => {
 
   const { images, prompt } = req.body || {};
   if (!Array.isArray(images) || !prompt) return res.status(400).json({ error: "Missing drawings or prompt." });
-  if (images.length > 4) return res.status(400).json({ error: "Upload at most 4 drawings." });
+  if (images.length > 6) return res.status(400).json({ error: "Upload at most 6 drawings." });
   const OK = ["image/jpeg", "image/png", "image/webp", "image/gif"];
   if (images.some(i => !i || typeof i.data !== "string" || !OK.includes(i.mediaType))) {
     return res.status(400).json({ error: "One of the drawings has an unsupported format." });
@@ -45,6 +46,7 @@ module.exports = async (req, res) => {
         "content-type": "application/json",
         "x-api-key": ANTHROPIC_API_KEY,
         "anthropic-version": "2023-06-01",
+        ...(ANTHROPIC_WORKSPACE_ID ? { "anthropic-workspace-id": ANTHROPIC_WORKSPACE_ID.trim() } : {}),
       },
       body: JSON.stringify({
         model: CLAUDE_MODEL || "claude-sonnet-5-5",
@@ -62,7 +64,16 @@ module.exports = async (req, res) => {
       }),
     });
     const data = await r.json();
-    if (!r.ok) return res.status(502).json({ error: data?.error?.message || "Claude API request failed." });
+    if (!r.ok) {
+      const msg = data?.error?.message || "Claude API request failed.";
+      if (/workspace/i.test(msg)) {
+        return res.status(502).json({ error: "This API key isn't tied to a workspace. In console.anthropic.com create a key inside a workspace (it starts with sk-ant-api03-) and put it in ANTHROPIC_API_KEY, or add ANTHROPIC_WORKSPACE_ID in Vercel. Then redeploy." });
+      }
+      if (/x-api-key|authentication/i.test(msg)) {
+        return res.status(502).json({ error: "The API key was rejected. Check ANTHROPIC_API_KEY in Vercel (it should start with sk-ant-api03-), then redeploy." });
+      }
+      return res.status(502).json({ error: msg });
+    }
 
     const text = (data.content || []).filter(b => b.type === "text").map(b => b.text).join("\n");
     const plan = extractJson(text);
